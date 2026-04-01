@@ -1,5 +1,7 @@
 # Self-Developing Agents Framework
 
+![Self-Developing Agents: Give Your AI Agent a Developer](img.png)
+
 **Give your AI agent a developer.** This framework deploys a headless Coding Agent alongside your existing agent. When your agent lacks a capability, the Coding Agent builds it — writes the code, tests it, reviews it with isolated sub-agents, and deploys it directly to your agent's workspace.
 
 Distilled from 1000+ sprints of real-world agent-driven development. 251 tests. Battle-tested.
