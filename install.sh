@@ -515,7 +515,17 @@ if [[ "$MODE" == "new" ]]; then
     if $OPENCLAW; then
         echo "3. The gateway has been restarted. The Coding Agent is polling for tasks."
         echo ""
-        echo "4. Tell your Main Agent: 'Read your updated AGENTS.md — you can now delegate coding tasks.'"
+        echo "4. IMPORTANT: Read the routing rules and run the Post-Install Self-Check."
+        echo "   You must internalize these behaviors:"
+        echo "   - Delegate coding tasks by writing files to $AGENT_WORKSPACE/tasks/"
+        echo "   - Notify the dev-agent immediately after dropping a task"
+        echo "   - IMMEDIATELY relay delivery notifications from the dev-agent to the human"
+        echo "   - Ask the human for gateway restart permission when a skill is deployed"
+        echo "   - Present a Task Completion Summary after every delivery"
+        echo ""
+        if [[ -n "$ROUTING_TARGET" ]]; then
+            echo "   Full routing rules: $ROUTING_TARGET"
+        fi
         echo ""
     else
         echo "3. Configure your agent platform to load the Coding Agent with:"
@@ -523,7 +533,10 @@ if [[ "$MODE" == "new" ]]; then
         echo "   - Read AGENTS.md and HEARTBEAT.md on session start"
         echo "   - Run poll-tasks.py every 10 minutes (or on heartbeat)"
         echo ""
-        echo "4. Tell your Main Agent about the routing rules in its updated AGENTS.md."
+        echo "4. IMPORTANT: Read the routing rules and internalize these behaviors:"
+        echo "   - Delegate coding tasks by writing files to $AGENT_WORKSPACE/tasks/"
+        echo "   - IMMEDIATELY relay delivery notifications from the dev-agent to the human"
+        echo "   - Present a Task Completion Summary after every delivery"
         echo ""
     fi
 else

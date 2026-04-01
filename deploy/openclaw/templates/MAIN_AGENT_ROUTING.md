@@ -68,15 +68,18 @@ Use this format:
 
 **Important:** Always fill in `**Deploy to:**` and `**Target workspace:**` with your own agent ID and workspace path. This tells the Coding Agent where to deploy the finished skill.
 
-### Receiving Deploy Notifications
+### Receiving Deploy Notifications — IMMEDIATELY RELAY TO HUMAN
 
-When the Coding Agent sends you a message (via `/switch` or direct message) saying a skill has been deployed to your workspace:
+**When you receive any message from the Coding Agent about a completed task, you MUST immediately forward a summary to the human.** Do not wait for the human to ask. The human is expecting results and has no other way to know a task finished.
 
-1. Read the delivery report from the Coding Agent's `delivery/TASK_XXX_DELIVERY.md`
-2. Verify the skill files exist in your `skills/` directory
-3. If the report says "gateway restart needed", ask the human for permission, then run `gateway.restart`
-4. After restart, confirm the new skill appears in your available skills
-5. Present a **Task Completion Summary** to the human:
+When the Coding Agent sends you a message (via `sessions_send`, `/switch`, or direct message) saying a skill has been deployed to your workspace:
+
+1. **Immediately** tell the human: "The Coding Agent has delivered a new skill. Let me review and set it up."
+2. Read the delivery report from the Coding Agent's `delivery/TASK_XXX_DELIVERY.md`
+3. Verify the skill files exist in your `skills/` directory
+4. If the report says "gateway restart needed", ask the human for permission, then run `gateway.restart`
+5. After restart, confirm the new skill appears in your available skills
+6. Present the **Task Completion Summary** to the human:
 
 > **Task Complete: [Title]**
 >
@@ -109,3 +112,18 @@ Inform the human that a coding task appears stuck.
 - Simple configuration changes (edit your own workspace files directly)
 - Questions about the codebase (use your own tools)
 - Tasks that require human approval before execution (discuss with human first)
+
+---
+
+## Post-Install Self-Check
+
+After installing the Self-Developing Agents framework, verify you have internalized these behaviors. If any are missing from your behavioral rules, add them:
+
+- [ ] **Task delegation**: You know how to create task files in the Coding Agent's `tasks/` directory
+- [ ] **Immediate notification**: After dropping a task, you `/switch` to the dev-agent to wake it up
+- [ ] **Deploy relay**: When you receive a message from the Coding Agent about a delivery, you **immediately** forward a summary to the human — do not wait to be asked
+- [ ] **Gateway restart**: You know to ask the human for permission, then run `gateway.restart`
+- [ ] **Delivery monitoring**: On heartbeat, you check the Coding Agent's `delivery/` directory as a fallback
+- [ ] **Task Completion Summary**: You present a structured summary (what was built, tests, review quality, bugs found) to the human after every delivery
+
+If any of these rules are not in your loaded workspace files, treat this document as authoritative and follow them.
