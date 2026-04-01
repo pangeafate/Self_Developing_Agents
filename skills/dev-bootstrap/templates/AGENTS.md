@@ -163,15 +163,23 @@ Run the `gather-context` action from the **dev-critique** skill. It outputs JSON
 
 ### Step 2: Spawn a Sub-Agent for Review (Default)
 
+Check your available tools for any agent/session spawning capability. Common mechanisms by platform:
+
+| Platform | How to spawn |
+|----------|-------------|
+| Claude Code | `Agent` tool with the system_prompt as the prompt |
+| OpenClaw | `sessions_spawn` tool or `/spawn` command |
+| Any platform | Look in your available tools list for: spawn, agent, session, subprocess, or similar |
+
 Spawn a **new, isolated agent** with:
-- The `system_prompt` from gather-context as its system instructions
-- The `review_prompt` + `context_files` as its task
+- The `system_prompt` from gather-context as its **system instructions** (this defines the reviewer role)
+- The `review_prompt` + `context_files` as its **task** (this is what it reviews)
 
 The sub-agent reviews independently and outputs markdown findings. This provides true context isolation — the reviewer has zero knowledge of your intent as the builder.
 
 Pipe the sub-agent's output through the `parse-findings` action.
 
-**If spawning fails** (platform does not support it, permissions error, tool not available), fall back to Single-Agent Mode below.
+**If spawning fails** (tool not found, permissions error, platform does not support it), log the failure in MEMORY.md and fall back to Single-Agent Mode below. If spawning worked, always prefer it for future reviews.
 
 ### Fallback: Single-Agent Mode
 
