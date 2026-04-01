@@ -539,6 +539,28 @@ if [[ "$MODE" == "new" ]]; then
         echo "   - Present a Task Completion Summary after every delivery"
         echo ""
     fi
+
+    # Drop smoke test task to validate the full pipeline
+    SMOKE_TEMPLATE="$FRAMEWORK_DEST/templates/TASK_000_smoke_test.md"
+    if [[ -f "$SMOKE_TEMPLATE" ]] && ! $DRY_RUN; then
+        MAIN_AGENT_ID_FOR_TASK="main"
+        if [[ -n "$MAIN_WORKSPACE" ]]; then
+            WS_BASE="$(basename "$MAIN_WORKSPACE")"
+            if [[ "$WS_BASE" == workspace-* ]]; then
+                MAIN_AGENT_ID_FOR_TASK="${WS_BASE#workspace-}"
+            fi
+        fi
+        CREATED_AT="$(date -u +%Y-%m-%dT%H:%M:%S.000Z)"
+        sed "s|{{MAIN_AGENT_ID}}|$MAIN_AGENT_ID_FOR_TASK|g; s|{{MAIN_AGENT_WORKSPACE}}|$MAIN_WORKSPACE|g; s|{{CREATED_AT}}|$CREATED_AT|g" \
+            "$SMOKE_TEMPLATE" > "$AGENT_WORKSPACE/tasks/TASK_000_smoke_test.md"
+        echo ""
+        echo "5. SMOKE TEST: Dropped TASK_000_smoke_test.md in the Coding Agent's task queue."
+        echo "   This will validate the full pipeline end-to-end:"
+        echo "   task pickup -> build -> deploy -> notification -> human relay"
+        echo "   If you see a Task Completion Summary from the dev-agent, everything works."
+        echo "   If you don't hear back within 15 minutes, check the dev-agent's workspace."
+        echo ""
+    fi
 else
     echo "Dev skills added to: $AGENT_WORKSPACE"
     echo ""

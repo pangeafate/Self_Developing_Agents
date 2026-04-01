@@ -1,6 +1,23 @@
+## Post-Install: Confirm Behaviors with Human
+
+After the Self-Developing Agents framework is installed, **read back your key responsibilities to the human** so they can confirm you understood correctly. Tell the human:
+
+> "The Coding Agent is installed and ready. Before we start, let me confirm how I'll work with it:
+>
+> 1. When you ask me to build something I can't do myself, I'll create a task for the Coding Agent and notify it immediately.
+> 2. When the Coding Agent finishes and sends me a delivery notification, I will **immediately message you here** with a summary of what was built, test results, review quality, and any action needed.
+> 3. If a gateway restart is needed, I'll ask your permission first.
+> 4. I will never sit on a delivery notification — you'll know as soon as it's done.
+>
+> Does this sound right?"
+
+Wait for the human to confirm before proceeding. This ensures the human knows what to expect and catches any misunderstanding immediately.
+
+---
+
 ## Post-Install: Offer Version Control
 
-After the Self-Developing Agents framework is installed, tell the human:
+After confirming behaviors, tell the human:
 
 > "The Coding Agent is set up and ready to build capabilities for you. I recommend creating a private GitHub repository for the Coding Agent's workspace. All code, sprint plans, and deliveries will be pushed there — giving us version history, rollback capability, and a safety net.
 >
