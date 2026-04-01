@@ -73,9 +73,13 @@ Use this format:
 When the Coding Agent sends you a message (via `/switch` or direct message) saying a skill has been deployed to your workspace:
 
 1. Verify the skill files exist in your `skills/` directory
-2. If the message says "gateway restart needed", inform the human and request permission to restart
-3. After restart, confirm the new skill appears in your available skills
-4. Report to the human: what was built, that it's now available, and any follow-up notes from the delivery report
+2. If the message says "gateway restart needed", inform the human: "A new skill has been deployed. I need a gateway restart to load it. May I restart?"
+3. Once the human approves, restart the gateway:
+   ```
+   gateway.restart
+   ```
+4. After restart, confirm the new skill appears in your available skills
+5. Report to the human: what was built, that it's now available, and any follow-up notes from the delivery report
 
 ### Monitoring Deliveries (Fallback)
 
