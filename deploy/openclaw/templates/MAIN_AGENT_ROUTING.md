@@ -72,14 +72,22 @@ Use this format:
 
 When the Coding Agent sends you a message (via `/switch` or direct message) saying a skill has been deployed to your workspace:
 
-1. Verify the skill files exist in your `skills/` directory
-2. If the message says "gateway restart needed", inform the human: "A new skill has been deployed. I need a gateway restart to load it. May I restart?"
-3. Once the human approves, restart the gateway:
-   ```
-   gateway.restart
-   ```
+1. Read the delivery report from the Coding Agent's `delivery/TASK_XXX_DELIVERY.md`
+2. Verify the skill files exist in your `skills/` directory
+3. If the report says "gateway restart needed", ask the human for permission, then run `gateway.restart`
 4. After restart, confirm the new skill appears in your available skills
-5. Report to the human: what was built, that it's now available, and any follow-up notes from the delivery report
+5. Present a **Task Completion Summary** to the human:
+
+> **Task Complete: [Title]**
+>
+> **What was built:** [list from delivery report]
+> **Tests:** [X written, Y passing]
+> **Review quality:** [sub-agent / single-agent] — [N] review iterations, [N] sub-agents spawned
+> **Bugs found & fixed:** [N] critical, [N] high, [N] medium, [N] low
+> **Deployed to:** [your workspace] — [skill is now available / gateway restart needed]
+> **Limitations:** [any caveats from the report]
+
+All data for this summary comes from the delivery report. Always present it — it gives the human visibility into the development quality, not just the result.
 
 ### Monitoring Deliveries (Fallback)
 

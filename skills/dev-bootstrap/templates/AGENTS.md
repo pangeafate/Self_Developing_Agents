@@ -135,12 +135,36 @@ Also manually update:
 - DATA_SCHEMA.md (if database changed)
 - CODEBASE_STRUCTURE.md (if new files/directories created)
 
-Write the delivery report to `delivery/TASK_XXX_DELIVERY.md` with:
-- What was built (skills, scripts, files)
-- Where it was deployed (target workspace path)
-- Whether the gateway needs restarting
-- Test count and pass status
-- Any known limitations or follow-up work
+Write the delivery report to `delivery/TASK_XXX_DELIVERY.md` using this structure:
+
+```markdown
+# Delivery Report: TASK_XXX — [Title]
+
+## What Was Built
+- [List of skills, scripts, files created or modified]
+
+## Deployment
+- **Deployed to:** [target agent ID]
+- **Target workspace:** [path]
+- **Gateway restart needed:** yes/no
+
+## Test Results
+- **Tests written:** [count]
+- **Tests passing:** [count]
+
+## Review Summary
+- **Review mode:** sub-agent / single-agent (fallback)
+- **Total review iterations:** [count across Stages 3 and 5]
+- **Sub-agents spawned:** [count, 0 if single-agent mode]
+- **Reviewer roles used:** [list, e.g. architect-reviewer, debugger, code-reviewer]
+- **Findings surfaced:** [count] CRITICAL, [count] HIGH, [count] MEDIUM, [count] LOW
+- **Findings fixed:** [count] (all CRITICAL and HIGH must be 0 to deploy)
+
+## Known Limitations
+[Any caveats or follow-up work needed]
+```
+
+Track review stats as you go through Stages 3 and 5 — after each `parse-findings` call, accumulate the severity counts and note which reviewer roles were used and whether they ran as sub-agents.
 
 Update the task file's `**Status:**` to `DELIVERED`.
 
