@@ -424,11 +424,22 @@ WSEOF
                 done
 
                 # Enable cross-agent messaging (required for task notifications and deploy handshakes)
+                # Two gates: sessions.visibility and agentToAgent.enabled
                 SESSIONS_VIS=$(jq -r '.tools.sessions.visibility // "none"' "$CONFIG_FILE" 2>/dev/null)
                 if [[ "$SESSIONS_VIS" != "all" ]]; then
                     jq '.tools.sessions.visibility = "all"' \
                         "$CONFIG_FILE" > "${CONFIG_FILE}.tmp" && mv "${CONFIG_FILE}.tmp" "$CONFIG_FILE"
-                    echo "  Enabled cross-agent messaging (tools.sessions.visibility=all)"
+                    echo "  Enabled session visibility (tools.sessions.visibility=all)"
+                fi
+
+                A2A_ENABLED=$(jq -r '.tools.agentToAgent.enabled // false' "$CONFIG_FILE" 2>/dev/null)
+                if [[ "$A2A_ENABLED" != "true" ]]; then
+                    # Build allowlist from all registered agent IDs
+                    AGENT_IDS=$(jq -r '[.agents.list[]?.id // empty] | join(",")' "$CONFIG_FILE" 2>/dev/null)
+                    jq --argjson allow "$(jq -r '[.agents.list[]?.id // empty]' "$CONFIG_FILE")" \
+                       '.tools.agentToAgent.enabled = true | .tools.agentToAgent.allowlist = $allow' \
+                       "$CONFIG_FILE" > "${CONFIG_FILE}.tmp" && mv "${CONFIG_FILE}.tmp" "$CONFIG_FILE"
+                    echo "  Enabled agent-to-agent messaging (tools.agentToAgent.enabled=true, allowlist: $AGENT_IDS)"
                 fi
             fi
         fi
