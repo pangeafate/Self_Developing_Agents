@@ -27,8 +27,9 @@ On top of the generic install, the `--openclaw` flag:
 1. Creates agent auth directory (`~/.openclaw/agents/<id>/agent/`) with auth-profiles.json copied from the main agent
 2. Creates `workspace-state.json` at `.openclaw/workspace-state.json` (required for OpenClaw workspace recognition)
 3. Patches `openclaw.json` to register the agent and 4 dev skills (with `SDA_FRAMEWORK_ROOT` env var)
-4. Sets file permissions (`openclaw:openclaw`, 550 for .py, 440 for .md)
-5. Restarts `openclaw-gateway`
+4. Enables cross-agent messaging (`tools.sessions.visibility=all`) — required for task notifications and deploy handshakes between agents
+5. Sets file permissions (`openclaw:openclaw`, 550 for .py, 440 for .md)
+6. Restarts `openclaw-gateway`
 
 ## Prerequisites
 

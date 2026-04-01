@@ -422,6 +422,14 @@ WSEOF
                         echo "  Registered skill '$skill_name'"
                     fi
                 done
+
+                # Enable cross-agent messaging (required for task notifications and deploy handshakes)
+                SESSIONS_VIS=$(jq -r '.tools.sessions.visibility // "none"' "$CONFIG_FILE" 2>/dev/null)
+                if [[ "$SESSIONS_VIS" != "all" ]]; then
+                    jq '.tools.sessions.visibility = "all"' \
+                        "$CONFIG_FILE" > "${CONFIG_FILE}.tmp" && mv "${CONFIG_FILE}.tmp" "$CONFIG_FILE"
+                    echo "  Enabled cross-agent messaging (tools.sessions.visibility=all)"
+                fi
             fi
         fi
 
