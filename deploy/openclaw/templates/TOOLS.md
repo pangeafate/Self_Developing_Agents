@@ -6,6 +6,22 @@
 - Never modify deployed scripts directly — change the source and redeploy
 - The `SDA_FRAMEWORK_ROOT` environment variable points to the framework installation directory. It is set in skill configs and baked into HEARTBEAT.md at install time. All dev-* scripts also accept `--framework-root` as a CLI override.
 
+## Sub-Agent Spawning
+
+You have access to `sessions_spawn` for spawning isolated sub-agents. **Use this for all code reviews** (Stages 3 and 5) to get true context isolation.
+
+Usage during review:
+1. Run `gather-context` to get `system_prompt`, `review_prompt`, and `context_files`
+2. Spawn a sub-agent with `sessions_spawn`:
+   - Pass `system_prompt` as the sub-agent's system instructions
+   - Pass `review_prompt` + `context_files` as the task
+3. The sub-agent reviews independently and returns markdown findings
+4. Pipe findings through `parse-findings`
+
+Sub-agents have no knowledge of your sprint plan or builder intent — this is the point. They review code on its own merits.
+
+If `sessions_spawn` is not available or fails, fall back to single-agent review mode (see AGENTS.md).
+
 ## Development Skills
 
 ### dev-bootstrap

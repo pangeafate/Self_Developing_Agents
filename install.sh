@@ -418,7 +418,8 @@ WSEOF
                                "workspace": $ws,
                                "agentDir": $ad,
                                "heartbeat": { "every": "10m" },
-                               "env": { "SDA_FRAMEWORK_ROOT": $fw }
+                               "env": { "SDA_FRAMEWORK_ROOT": $fw },
+                               "subagents": { "allowAgents": [$id] }
                            }])' "$CONFIG_FILE" > "${CONFIG_FILE}.tmp" && mv "${CONFIG_FILE}.tmp" "$CONFIG_FILE"
                         echo "  Added agent '$OPENCLAW_AGENT_ID' to openclaw.json"
                     fi
