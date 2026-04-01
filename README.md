@@ -1,6 +1,8 @@
 # Self-Developing Agents Framework
 
-![Self-Developing Agents: Give Your AI Agent a Developer](img.png)
+![Self-Developing Agents: Give Your AI Agent a Developer](img2.png)
+
+![Why Self-Developing Agents Need Separation of Concerns](img_1.png)
 
 **Give your AI agent a developer.** This framework deploys a headless Coding Agent alongside your existing agent. When your agent lacks a capability, the Coding Agent builds it — writes the code, tests it, reviews it with isolated sub-agents, and deploys it directly to your agent's workspace.
 
@@ -29,7 +31,7 @@ Your Agent:
   → Tells you: "New email notification capability is ready"
 ```
 
-Your agent just improved itself. No human wrote code.
+Your agent just improved itself in a managed way.
 
 ## Quick Start (Any Platform)
 
