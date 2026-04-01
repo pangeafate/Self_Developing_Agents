@@ -153,33 +153,38 @@ Skill "<skill-name>" has been deployed to your workspace. Gateway restart needed
 
 ---
 
-## Review Protocol (Primary — Single-Agent Mode)
+## Review Protocol
 
-This protocol works on any platform. For platforms with sub-agent support, see Enhanced Review Protocol below.
+**Always attempt sub-agent review first.** Only fall back to single-agent mode if spawning fails.
 
-When you need to review code or plans:
+### Step 1: Prepare
 
-1. **Prepare**: Run the `gather-context` action from the **dev-critique** skill. It outputs JSON containing a `system_prompt` (the reviewer's role), a `review_prompt` (what to look for), and `context_files` (the code to review).
+Run the `gather-context` action from the **dev-critique** skill. It outputs JSON containing a `system_prompt` (the reviewer's role), a `review_prompt` (what to look for), and `context_files` (the code to review).
 
-2. **Context break**: Before reviewing, explicitly acknowledge: "I am now switching to reviewer mode. I will evaluate the code on its own merits without considering my intent when I wrote it."
+### Step 2: Spawn a Sub-Agent for Review (Default)
 
-3. **Review**: Read the `review_prompt` and `context_files` from the JSON output. For Stage 5, do NOT re-read the sprint plan — evaluate the code as if you are seeing it for the first time. Produce findings using severity format: `**CRITICAL**`, `**HIGH**`, `**MEDIUM**`, `**LOW**`.
+Spawn a **new, isolated agent** with:
+- The `system_prompt` from gather-context as its system instructions
+- The `review_prompt` + `context_files` as its task
 
-4. **Parse**: Pipe your findings through the `parse-findings` action. Read the structured JSON result.
+The sub-agent reviews independently and outputs markdown findings. This provides true context isolation — the reviewer has zero knowledge of your intent as the builder.
 
-5. **Switch back**: "I am switching back to builder mode." Act on the findings.
+Pipe the sub-agent's output through the `parse-findings` action.
 
-6. **Iterate**: Repeat with a different reviewer role for the next iteration. Minimum 2 iterations per stage.
+**If spawning fails** (platform does not support it, permissions error, tool not available), fall back to Single-Agent Mode below.
 
-### Enhanced Review Protocol (Sub-Agent Platforms)
+### Fallback: Single-Agent Mode
 
-If your platform supports spawning isolated sub-agents (e.g., Claude Code's Agent tool):
+Use this only if sub-agent spawning is not available or failed:
 
-1. Run `gather-context` action — same as above
-2. Spawn a **new, isolated agent** with the `system_prompt` as its system instructions and `review_prompt` + `context_files` as its task
-3. The sub-agent reviews independently and outputs markdown findings
-4. Pipe the sub-agent's output through `parse-findings`
-5. This provides true context isolation — the reviewer has zero knowledge of your intent
+1. **Context break**: Before reviewing, explicitly acknowledge: "I am now switching to reviewer mode. I will evaluate the code on its own merits without considering my intent when I wrote it."
+2. **Review**: Read the `review_prompt` and `context_files` from the JSON output. For Stage 5, do NOT re-read the sprint plan — evaluate the code as if you are seeing it for the first time. Produce findings using severity format: `**CRITICAL**`, `**HIGH**`, `**MEDIUM**`, `**LOW**`.
+3. **Parse**: Pipe your findings through the `parse-findings` action.
+4. **Switch back**: "I am switching back to builder mode." Act on the findings.
+
+### Iteration
+
+Repeat with a different reviewer role for the next iteration. Minimum 2 iterations per stage.
 
 ### Available Reviewer Roles
 
