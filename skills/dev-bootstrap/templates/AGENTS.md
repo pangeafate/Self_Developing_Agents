@@ -207,7 +207,14 @@ Pipe the sub-agent's output through the `parse-findings` action.
 
 ### Fallback: Single-Agent Mode
 
-Use this only if sub-agent spawning is not available or failed:
+Use this only if sub-agent spawning is not available or failed.
+
+**Important limitation:** Single-agent review with context breaks is significantly less effective than true sub-agent isolation. The agent cannot fully forget its own intent — cognitive biases (confirmation bias, anchoring, curse of knowledge) persist across context breaks. When using single-agent mode:
+- Expect to catch materially fewer bugs than sub-agent mode
+- Compensate by running MORE iterations (3-4 minimum instead of 2)
+- Be especially vigilant for "looks good to me" bias — if a review finds zero issues on the first pass, that itself is suspicious and warrants a harder second look
+
+Steps:
 
 1. **Context break**: Before reviewing, explicitly acknowledge: "I am now switching to reviewer mode. I will evaluate the code on its own merits without considering my intent when I wrote it."
 2. **Review**: Read the `review_prompt` and `context_files` from the JSON output. For Stage 5, do NOT re-read the sprint plan — evaluate the code as if you are seeing it for the first time. Produce findings using severity format: `**CRITICAL**`, `**HIGH**`, `**MEDIUM**`, `**LOW**`.

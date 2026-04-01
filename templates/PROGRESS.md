@@ -25,7 +25,7 @@
 - **Status**: [Complete / Abandoned / Superseded by SP_YYY]
 - **Date**: [YYYY-MM-DD]
 - **Summary**: [One-line description of what was delivered]
-- **Tests added**: [+N new tests]
+- **Tests added**: [+N new tests (NNNN total)]
 
 <!-- Example:
 ### SP_130: Workout Tracking Foundation
@@ -33,14 +33,14 @@
 - **Status**: Complete
 - **Date**: 2026-03-28
 - **Summary**: Exercise logging with 3-tier fuzzy matching, category-specific PR detection, muscle group recency suggestions with 48h cooldown
-- **Tests added**: +208 new tests
+- **Tests added**: +208 new tests (5,867 total)
 
 ### SP_129: Knowledge Briefing Relevance Fix
 
 - **Status**: Complete
 - **Date**: 2026-03-25
 - **Summary**: Added `expected_outcome` to `InitiativeItem`; fixed BM25 data truncation that caused empty knowledge sections in briefings
-- **Tests added**: +7 new tests
+- **Tests added**: +7 new tests (5,659 total)
 
 ### SP_105: Thesis to Hypothesis Full Rename
 

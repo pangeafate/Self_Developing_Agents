@@ -121,6 +121,7 @@ def _build_history_entry(
     summary: str,
     today: str,
     tests_added: int | None,
+    tests_total: int | None = None,
 ) -> str:
     """Render a Sprint History entry block."""
     status_label = status.capitalize()
@@ -132,7 +133,10 @@ def _build_history_entry(
         f"- **Summary**: {summary}",
     ]
     if tests_added is not None:
-        lines.append(f"- **Tests added**: +{tests_added} new tests")
+        if tests_total is not None:
+            lines.append(f"- **Tests added**: +{tests_added} new tests ({tests_total:,} total)")
+        else:
+            lines.append(f"- **Tests added**: +{tests_added} new tests")
     lines.append("")
     return "\n".join(lines)
 
@@ -202,6 +206,7 @@ def update_progress(
     status: str,
     summary: str,
     tests_added: int | None,
+    tests_total: int | None = None,
 ) -> list[str]:
     """Update PROGRESS.md: archive active sprint, prepend history entry.
 
@@ -249,7 +254,7 @@ def update_progress(
     content = _remove_active_sprint_section_content(content, sprint_id)
 
     # Build and prepend the history entry
-    entry = _build_history_entry(sprint_id, goal, status, summary, today, tests_added)
+    entry = _build_history_entry(sprint_id, goal, status, summary, today, tests_added, tests_total)
     content = _prepend_to_history_section(content, entry)
 
     try:
@@ -299,6 +304,12 @@ def _build_parser() -> argparse.ArgumentParser:
         help="Number of new tests added in this sprint",
     )
     parser.add_argument(
+        "--tests-total",
+        type=int,
+        default=None,
+        help="Running total of all tests in the project after this sprint",
+    )
+    parser.add_argument(
         "--framework-root",
         type=Path,
         default=None,
@@ -339,6 +350,7 @@ def main() -> None:
         status=args.status,
         summary=args.summary,
         tests_added=args.tests_added,
+        tests_total=args.tests_total,
     )
 
     result = {

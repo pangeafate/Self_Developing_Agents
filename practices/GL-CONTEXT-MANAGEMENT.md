@@ -40,6 +40,27 @@ After any of these events, the FIRST action is to re-read the sprint plan file:
 
 **Why**: The sprint plan contains the complete specification: what to build, what approach to take, what files to modify, what tests to write, and what success looks like. Partial recall produces partial implementation.
 
+### Mid-Session Context Compaction
+
+When the agent platform compresses or truncates the conversation history mid-session (common in long implementation sessions), the agent must:
+
+1. **Stop current work immediately** — do not continue coding from partial memory
+2. Re-read the active sprint plan file from disk (it was saved before implementation began)
+3. Re-read MEMORY.md for cross-session state
+4. Re-read PROGRESS.md for active sprint confirmation
+5. Assess current stage: compare what the sprint plan says should be done vs what files exist on disk (run validators to detect current state)
+6. Resume from the identified stage — do not restart from Stage 1
+
+The sprint plan file is the authoritative context anchor. If the agent's memory of what it was doing conflicts with what the sprint plan says, trust the sprint plan.
+
+**Signs of context compaction:**
+- The agent cannot recall earlier conversation turns
+- The agent asks about decisions that were already made
+- The agent proposes changes that were already implemented
+- The agent repeats a review iteration that was already completed
+
+Recovery takes priority over speed. A 2-minute re-read prevents hours of re-work from a corrupted context state.
+
 ### Rule 3: Sprint Plan Is the Authoritative Context Anchor
 
 When there is ambiguity about what to do next, the sprint plan is the source of truth -- not memory, not conversation history, not previous reasoning.

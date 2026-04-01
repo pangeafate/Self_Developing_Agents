@@ -106,18 +106,34 @@ Following GL-TDD.md:
 - **Iteration 1** ([DATE]): [Reviewer] found [N] [SEVERITY]. Files reviewed: [file1, file2]
 - **Iteration 2** ([DATE]): [Reviewer] found [N] issues. Files reviewed: [file1, file2]
 
+**Resolution — All CRITICAL and HIGH addressed:**
+1. **C-1 ([short identifier])**: [What was wrong] → [What was changed and why]
+2. **H-1 ([short identifier])**: [What was wrong] → [What was changed and why]
+
 <!-- Example (this is the format validate_sprint.py expects — each iteration is a bullet):
 ### Pre-Implementation Review
 - **Iteration 1** (2026-01-01): architect-reviewer found 1 CRITICAL, 2 HIGH, 1 MEDIUM. Files reviewed: sprint plan, src/lib/service.py, src/models/entity.py
 - **Iteration 2** (2026-01-02): code-reviewer found 0 CRITICAL/HIGH. Files reviewed: sprint plan, src/lib/service.py
+
+**Resolution — All CRITICAL and HIGH addressed:**
+1. **C-1 (missing input validation)**: Service accepted unbounded input → Added max-length check with 413 response
+2. **H-1 (no retry on transient failure)**: API call failed permanently on timeout → Added exponential backoff with 3 retries
+3. **H-2 (test gap)**: Happy path only → Added error-path tests for validation and retry
 -->
 
 ### Post-Implementation Review
 - **Iteration 1** ([DATE]): Found [N] [SEVERITY] issues. Files reviewed: [file1, file2]
 - **Iteration 2** ([DATE]): Found [N] issues. Files reviewed: [file1, file2]
 
+**Resolution — All CRITICAL and HIGH addressed:**
+1. **C-1 ([short identifier])**: [What was wrong] → [What was changed and why]
+2. **H-1 ([short identifier])**: [What was wrong] → [What was changed and why]
+
 <!-- Example:
 ### Post-Implementation Review
 - **Iteration 1** (2026-01-03): debugger found 1 HIGH issue. Files reviewed: src/lib/service.py, test/unit/test_service.py
 - **Iteration 2** (2026-01-04): code-reviewer found 0 issues. Files reviewed: src/lib/service.py (clean iteration — ready to deploy)
+
+**Resolution — All CRITICAL and HIGH addressed:**
+1. **H-1 (silent data loss)**: Column mismatch returned empty string instead of error → Raises ValueError with diagnostic message
 -->

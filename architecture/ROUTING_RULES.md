@@ -72,8 +72,14 @@ When the Main Agent routes to the Coding Agent, it must provide a structured tas
 ```markdown
 # Task: [Short descriptive title]
 
+**ID:** TASK_XXX
+**Status:** NEW
+**Requested by:** [your agent ID]
 **Deploy to:** [agent ID that will receive the built skill]
 **Target workspace:** [absolute path to the requesting agent's workspace]
+**Created:** [ISO timestamp]
+**Timeout hours:** 24
+**Priority:** high | medium | low
 
 ## What the Human Asked For
 [The human's request, quoted verbatim when possible, with additional
