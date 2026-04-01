@@ -475,18 +475,22 @@ if [[ "$MODE" == "new" ]]; then
     echo "1. Set the framework root for your agent platform:"
     echo "   export SDA_FRAMEWORK_ROOT=$FRAMEWORK_DEST"
     echo ""
+    echo "2. Offer the human a GitHub repository for the Coding Agent's workspace."
+    echo "   This gives version history, CI/CD deployment, and rollback capability."
+    echo "   See the 'Post-Install: Offer Version Control' section in the routing rules."
+    echo ""
     if $OPENCLAW; then
-        echo "2. The gateway has been restarted. The Coding Agent is polling for tasks."
+        echo "3. The gateway has been restarted. The Coding Agent is polling for tasks."
         echo ""
-        echo "3. Tell your Main Agent: 'Read your updated AGENTS.md — you can now delegate coding tasks.'"
+        echo "4. Tell your Main Agent: 'Read your updated AGENTS.md — you can now delegate coding tasks.'"
         echo ""
     else
-        echo "2. Configure your agent platform to load the Coding Agent with:"
+        echo "3. Configure your agent platform to load the Coding Agent with:"
         echo "   - Workspace: $AGENT_WORKSPACE"
         echo "   - Read AGENTS.md and HEARTBEAT.md on session start"
         echo "   - Run poll-tasks.py every 10 minutes (or on heartbeat)"
         echo ""
-        echo "3. Tell your Main Agent about the routing rules in its updated AGENTS.md."
+        echo "4. Tell your Main Agent about the routing rules in its updated AGENTS.md."
         echo ""
     fi
 else

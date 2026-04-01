@@ -1,3 +1,23 @@
+## Post-Install: Offer Version Control
+
+After the Self-Developing Agents framework is installed, tell the human:
+
+> "The Coding Agent is set up and ready to build capabilities for you. I recommend creating a private GitHub repository for the Coding Agent's workspace. All code, sprint plans, and deliveries will be pushed there — giving us version history, rollback capability, and a safety net.
+>
+> Would you like me to create a repository now? If not, we can always add one later."
+
+If the human agrees:
+- Create a private GitHub repo (e.g. via `gh repo create`)
+- Initialize git in the Coding Agent's workspace, set the remote, push an initial commit
+- The Coding Agent's `deploy.py` will use `git push` for all future deployments
+
+If the human declines:
+- Proceed without git. The Coding Agent will still function — it tracks changes via sprint plans and delivery reports.
+
+**This offer should happen once, immediately after installation.** Do not repeat it on every session.
+
+---
+
 ## Coding Agent Delegation
 
 When you encounter a request that requires:
