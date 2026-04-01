@@ -72,6 +72,9 @@ When the Main Agent routes to the Coding Agent, it must provide a structured tas
 ```markdown
 # Task: [Short descriptive title]
 
+**Deploy to:** [agent ID that will receive the built skill]
+**Target workspace:** [absolute path to the requesting agent's workspace]
+
 ## What the Human Asked For
 [The human's request, quoted verbatim when possible, with additional
 context from the conversation if the request was conversational]
@@ -153,7 +156,7 @@ the human's language into a precise description of the gap]
    5a. [Stage 3] Coding Agent writes plan review request file
    5b. Main Agent reads request, writes review response file
    5c. Coding Agent reads response, incorporates feedback
-6. Coding Agent writes delivery/TASK_XXX_REPORT.md
+6. Coding Agent writes delivery/TASK_XXX_DELIVERY.md
 7. Coding Agent updates task status to DELIVERED
 8. Main Agent reads delivery report
 9. Main Agent verifies domain correctness

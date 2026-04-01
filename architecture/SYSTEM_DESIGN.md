@@ -138,7 +138,7 @@ Human -> Main Agent: "I need the system to handle recurring tasks"
                     Coding Agent
                           |
                           | [spawns Helper Agents as needed]
-                          | [writes results to delivery/TASK_XXX_REPORT.md]
+                          | [writes results to delivery/TASK_XXX_DELIVERY.md]
                           v
                     Main Agent [reads delivery report]
                           |

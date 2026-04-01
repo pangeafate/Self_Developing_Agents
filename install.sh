@@ -202,10 +202,23 @@ if ! $DRY_RUN; then
         # Copy identity templates if they exist (OpenClaw-specific templates)
         if [[ -d "$FRAMEWORK_DEST/deploy/openclaw/templates" ]]; then
             echo "  Copying identity files..."
-            for tmpl in IDENTITY.md SOUL.md USER.md TOOLS.md; do
+            # Derive main agent ID from workspace path (workspace-<id> convention)
+            MAIN_AGENT_ID="main"
+            if [[ -n "$MAIN_WORKSPACE" ]]; then
+                WS_BASENAME="$(basename "$MAIN_WORKSPACE")"
+                if [[ "$WS_BASENAME" == workspace-* ]]; then
+                    MAIN_AGENT_ID="${WS_BASENAME#workspace-}"
+                fi
+            fi
+            for tmpl in SOUL.md USER.md TOOLS.md; do
                 [[ -f "$FRAMEWORK_DEST/deploy/openclaw/templates/$tmpl" ]] && \
                     cp "$FRAMEWORK_DEST/deploy/openclaw/templates/$tmpl" "$AGENT_WORKSPACE/"
             done
+            # IDENTITY.md needs placeholder substitution
+            if [[ -f "$FRAMEWORK_DEST/deploy/openclaw/templates/IDENTITY.md" ]]; then
+                sed "s|{{MAIN_AGENT_ID}}|$MAIN_AGENT_ID|g" \
+                    "$FRAMEWORK_DEST/deploy/openclaw/templates/IDENTITY.md" > "$AGENT_WORKSPACE/IDENTITY.md"
+            fi
         fi
 
     else
