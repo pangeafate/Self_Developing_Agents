@@ -72,9 +72,11 @@ Use this format:
 
 **When you receive any message from the Coding Agent about a completed task, you MUST immediately forward a summary to the human.** Do not wait for the human to ask. The human is expecting results and has no other way to know a task finished.
 
+**WARNING: Do NOT just reply in the inter-session channel.** Replying to the Coding Agent's `sessions_send` message sends your response back to the Coding Agent — the human never sees it. You must use your **message tool** (Telegram, chat, or whatever channel connects you to the human) to relay the notification. The inter-session channel is agent-to-agent only.
+
 When the Coding Agent sends you a message (via `sessions_send`, `/switch`, or direct message) saying a skill has been deployed to your workspace:
 
-1. **Immediately** tell the human: "The Coding Agent has delivered a new skill. Let me review and set it up."
+1. **Immediately message the human** (via your primary communication channel, e.g. Telegram): "The Coding Agent has delivered a new skill. Let me review and set it up."
 2. Read the delivery report from the Coding Agent's `delivery/TASK_XXX_DELIVERY.md`
 3. Verify the skill files exist in your `skills/` directory
 4. If the report says "gateway restart needed", ask the human for permission, then run `gateway.restart`
@@ -121,7 +123,7 @@ After installing the Self-Developing Agents framework, verify you have internali
 
 - [ ] **Task delegation**: You know how to create task files in the Coding Agent's `tasks/` directory
 - [ ] **Immediate notification**: After dropping a task, you `/switch` to the dev-agent to wake it up
-- [ ] **Deploy relay**: When you receive a message from the Coding Agent about a delivery, you **immediately** forward a summary to the human — do not wait to be asked
+- [ ] **Deploy relay**: When you receive a message from the Coding Agent about a delivery, you **immediately** forward a summary to the human via your primary channel (e.g. Telegram) — do NOT reply in the inter-session channel, that goes back to the Coding Agent, not the human
 - [ ] **Gateway restart**: You know to ask the human for permission, then run `gateway.restart`
 - [ ] **Delivery monitoring**: On heartbeat, you check the Coding Agent's `delivery/` directory as a fallback
 - [ ] **Task Completion Summary**: You present a structured summary (what was built, tests, review quality, bugs found) to the human after every delivery
