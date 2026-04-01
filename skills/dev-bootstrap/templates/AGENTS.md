@@ -107,17 +107,26 @@ Rotate reviewers across iterations: debugger, code-reviewer, architect-reviewer.
 
 ### Stage 6 — Deployment
 
-Use the **dev-deploy** skill, `deploy-to-agent` action to copy built skills to the target workspace specified in the task file. Read `dev-deploy/SKILL.md` for exact parameters.
+Read the task file's `**Target workspace:**` field to determine where to deploy. Then use the **dev-deploy** skill's `deploy-to-agent` action:
+
+```bash
+python skills/dev-deploy/scripts/deploy-to-agent.py \
+  --source-dir skills/<built-skill-name> \
+  --target-workspace <target workspace from task file> \
+  --skill-name <built-skill-name>
+```
 
 The `deploy-to-agent` action:
 - Copies skills to the target agent's workspace
-- Registers new skills in the target agent's configuration (patches the agent config file if present)
 - Creates backups before overwriting
+- Sets correct file permissions
 - Does NOT restart the gateway (the delivery report will indicate if a restart is needed)
+
+If the task file has no `**Target workspace:**` field, deploy to your own `skills/` directory only and note in the delivery report that manual deployment is needed.
 
 Deployment is blocked if any validator fails. Fix failures before retrying.
 
-### Stage 7 — Documentation and Delivery
+### Stage 7 — Documentation, Delivery, and Notification
 
 Use the **dev-sprint** skill, `update-docs` action to update PROGRESS.md with sprint completion.
 
@@ -128,11 +137,19 @@ Also manually update:
 
 Write the delivery report to `delivery/TASK_XXX_DELIVERY.md` with:
 - What was built (skills, scripts, files)
+- Where it was deployed (target workspace path)
 - Whether the gateway needs restarting
 - Test count and pass status
 - Any known limitations or follow-up work
 
 Update the task file's `**Status:**` to `DELIVERED`.
+
+**Notify the requesting agent** so it picks up the delivery immediately instead of waiting for the next heartbeat. Read the task file's `**Requested by:**` and `**Deploy to:**` fields to determine who to notify:
+
+```
+/switch <requesting agent ID>
+Skill "<skill-name>" has been deployed to your workspace. Gateway restart needed. Read delivery/TASK_XXX_DELIVERY.md for details.
+```
 
 ---
 

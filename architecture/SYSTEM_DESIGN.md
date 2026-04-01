@@ -238,13 +238,13 @@ Task metadata uses **bold labels** (`**Status:** NEW`) rather than headings (`##
 ```
 
 **Flow**:
-1. Main Agent writes a task file to the Coding Agent's `tasks/` directory with `**Status:** NEW`
-2. Coding Agent polls `tasks/` on heartbeat (every 10 minutes) via `poll-tasks.py`
-3. Coding Agent picks up the highest-priority NEW task, updates `**Status:**` to `IN_PROGRESS`
-4. Coding Agent executes the full 7-stage development cycle
-5. Coding Agent deploys built skills to the Main Agent's workspace via `deploy-to-agent.py`
-6. Coding Agent writes `delivery/TASK_XXX_DELIVERY.md`, updates task `**Status:**` to `DELIVERED`
-7. Main Agent reads the delivery report on its next heartbeat and acts on it (restart gateway if needed)
+1. Main Agent writes a task file to the Coding Agent's `tasks/` directory with `**Status:** NEW` and notifies the Coding Agent directly
+2. Coding Agent picks up the task immediately (or on next heartbeat as fallback), updates `**Status:**` to `IN_PROGRESS`
+3. Coding Agent executes the full 7-stage development cycle
+4. Coding Agent deploys built skills to the Main Agent's workspace (path from `**Target workspace:**` in task) via `deploy-to-agent.py`
+5. Coding Agent writes `delivery/TASK_XXX_DELIVERY.md`, updates task `**Status:**` to `DELIVERED`
+6. Coding Agent notifies the Main Agent directly: skill deployed, gateway restart needed
+7. Main Agent verifies the deployment, requests human approval for gateway restart, reports to human
 
 ---
 

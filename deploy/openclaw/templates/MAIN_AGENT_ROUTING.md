@@ -47,7 +47,8 @@ Use this format:
     **ID:** TASK_XXX
     **Status:** NEW
     **Requested by:** [your agent ID]
-    **Target workspace:** [your workspace path]
+    **Deploy to:** [your agent ID — the agent that will receive the built skill]
+    **Target workspace:** [absolute path to your workspace, e.g. /home/openclaw/.openclaw/workspace-callisto]
     **Created:** [current ISO timestamp]
     **Timeout hours:** 24
     **Priority:** high | medium | low
@@ -65,9 +66,20 @@ Use this format:
     ## Domain Context
     [Which existing skills, tables, or services this relates to. Include file paths if known.]
 
-### Monitoring Deliveries
+**Important:** Always fill in `**Deploy to:**` and `**Target workspace:**` with your own agent ID and workspace path. This tells the Coding Agent where to deploy the finished skill.
 
-On heartbeat, check {{CODING_AGENT_WORKSPACE}}/delivery/ for completed tasks.
+### Receiving Deploy Notifications
+
+When the Coding Agent sends you a message (via `/switch` or direct message) saying a skill has been deployed to your workspace:
+
+1. Verify the skill files exist in your `skills/` directory
+2. If the message says "gateway restart needed", inform the human and request permission to restart
+3. After restart, confirm the new skill appears in your available skills
+4. Report to the human: what was built, that it's now available, and any follow-up notes from the delivery report
+
+### Monitoring Deliveries (Fallback)
+
+On heartbeat, check {{CODING_AGENT_WORKSPACE}}/delivery/ for completed tasks. This catches any deliveries where the direct notification was missed.
 
 Read the delivery report — it tells you:
 - What was built (skills, scripts, files)
