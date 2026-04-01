@@ -265,22 +265,46 @@ fi
 # ===================================================================
 # STEP 4: Wire Main Agent routing (new mode only)
 # ===================================================================
+ROUTING_TARGET=""  # Track where routing rules ended up
+
 if [[ "$MODE" == "new" && -n "$MAIN_WORKSPACE" ]]; then
     echo ""
     echo "Step 4: Wiring Main Agent routing..."
 
     if ! $DRY_RUN; then
         ROUTING_TEMPLATE="$FRAMEWORK_DEST/deploy/openclaw/templates/MAIN_AGENT_ROUTING.md"
-        if [[ -f "$ROUTING_TEMPLATE" && -f "$MAIN_WORKSPACE/AGENTS.md" ]]; then
-            if ! grep -q "# Coding Agent Delegation" "$MAIN_WORKSPACE/AGENTS.md" 2>/dev/null; then
-                echo "" >> "$MAIN_WORKSPACE/AGENTS.md"
-                echo "---" >> "$MAIN_WORKSPACE/AGENTS.md"
-                echo "" >> "$MAIN_WORKSPACE/AGENTS.md"
-                sed "s|{{CODING_AGENT_TASKS_DIR}}|$AGENT_WORKSPACE/tasks|g; s|{{CODING_AGENT_WORKSPACE}}|$AGENT_WORKSPACE|g" \
-                    "$ROUTING_TEMPLATE" >> "$MAIN_WORKSPACE/AGENTS.md"
+        ROUTING_CONTENT=""
+        if [[ -f "$ROUTING_TEMPLATE" ]]; then
+            ROUTING_CONTENT=$(sed "s|{{CODING_AGENT_TASKS_DIR}}|$AGENT_WORKSPACE/tasks|g; s|{{CODING_AGENT_WORKSPACE}}|$AGENT_WORKSPACE|g" \
+                "$ROUTING_TEMPLATE")
+        fi
+
+        if [[ -f "$MAIN_WORKSPACE/AGENTS.md" ]]; then
+            if grep -q "# Coding Agent Delegation" "$MAIN_WORKSPACE/AGENTS.md" 2>/dev/null; then
+                ROUTING_TARGET="$MAIN_WORKSPACE/AGENTS.md"
+                echo "  Routing rules already present — skipping"
+            elif [[ -w "$MAIN_WORKSPACE/AGENTS.md" ]]; then
+                {
+                    echo ""
+                    echo "---"
+                    echo ""
+                    echo "$ROUTING_CONTENT"
+                } >> "$MAIN_WORKSPACE/AGENTS.md"
+                ROUTING_TARGET="$MAIN_WORKSPACE/AGENTS.md"
                 echo "  Routing rules appended to $MAIN_WORKSPACE/AGENTS.md"
             else
-                echo "  Routing rules already present — skipping"
+                # AGENTS.md is not writable (e.g. root-owned, read-only) — write to a separate file
+                echo "  WARNING: $MAIN_WORKSPACE/AGENTS.md is not writable ($(ls -l "$MAIN_WORKSPACE/AGENTS.md" 2>/dev/null | awk '{print $3":"$4, $1}'))" >&2
+                echo "$ROUTING_CONTENT" > "$MAIN_WORKSPACE/ROUTING.md" 2>/dev/null && {
+                    ROUTING_TARGET="$MAIN_WORKSPACE/ROUTING.md"
+                    echo "  Routing rules saved to $MAIN_WORKSPACE/ROUTING.md instead"
+                    echo "  To merge: make AGENTS.md writable, then append ROUTING.md contents" >&2
+                } || {
+                    echo "  WARNING: Could not write ROUTING.md either. Saving to $AGENT_WORKSPACE/ROUTING.md" >&2
+                    echo "$ROUTING_CONTENT" > "$AGENT_WORKSPACE/ROUTING.md"
+                    ROUTING_TARGET="$AGENT_WORKSPACE/ROUTING.md"
+                    echo "  Routing rules saved to $AGENT_WORKSPACE/ROUTING.md — copy to main workspace manually" >&2
+                }
             fi
         elif [[ ! -f "$MAIN_WORKSPACE/AGENTS.md" ]]; then
             echo "  WARNING: $MAIN_WORKSPACE/AGENTS.md not found — routing rules not appended" >&2
@@ -359,38 +383,43 @@ WSEOF
 
         # Patch openclaw.json
         if [[ -f "$CONFIG_FILE" ]] && ! $DRY_RUN; then
-            cp "$CONFIG_FILE" "${CONFIG_FILE}.bak.$(date +%s)"
+            if [[ ! -w "$CONFIG_FILE" ]]; then
+                echo "  WARNING: $CONFIG_FILE is not writable — skipping config patching" >&2
+                echo "  You will need to register the dev-agent and skills manually" >&2
+            else
+                cp "$CONFIG_FILE" "${CONFIG_FILE}.bak.$(date +%s)"
 
-            if [[ "$MODE" == "new" ]]; then
-                # Register agent
-                AGENT_EXISTS=$(jq --arg id "$OPENCLAW_AGENT_ID" '.agents.list // [] | map(select(.id == $id)) | length' "$CONFIG_FILE")
-                if [[ "$AGENT_EXISTS" == "0" ]]; then
-                    jq --arg id "$OPENCLAW_AGENT_ID" \
-                       --arg name "$OPENCLAW_AGENT_NAME" \
-                       --arg ws "$AGENT_WORKSPACE" \
-                       --arg ad "$AGENT_DIR" \
-                       '.agents.list += [{
-                           "id": $id,
-                           "name": $name,
-                           "workspace": $ws,
-                           "agentDir": $ad,
-                           "heartbeat": { "every": "10m" }
-                       }]' "$CONFIG_FILE" > "${CONFIG_FILE}.tmp" && mv "${CONFIG_FILE}.tmp" "$CONFIG_FILE"
-                    echo "  Added agent '$OPENCLAW_AGENT_ID' to openclaw.json"
+                if [[ "$MODE" == "new" ]]; then
+                    # Register agent — ensure .agents.list exists
+                    AGENT_EXISTS=$(jq --arg id "$OPENCLAW_AGENT_ID" '(.agents.list // []) | map(select(.id == $id)) | length' "$CONFIG_FILE")
+                    if [[ "$AGENT_EXISTS" == "0" ]]; then
+                        jq --arg id "$OPENCLAW_AGENT_ID" \
+                           --arg name "$OPENCLAW_AGENT_NAME" \
+                           --arg ws "$AGENT_WORKSPACE" \
+                           --arg ad "$AGENT_DIR" \
+                           '.agents.list = ((.agents.list // []) + [{
+                               "id": $id,
+                               "name": $name,
+                               "workspace": $ws,
+                               "agentDir": $ad,
+                               "heartbeat": { "every": "10m" }
+                           }])' "$CONFIG_FILE" > "${CONFIG_FILE}.tmp" && mv "${CONFIG_FILE}.tmp" "$CONFIG_FILE"
+                        echo "  Added agent '$OPENCLAW_AGENT_ID' to openclaw.json"
+                    fi
                 fi
+
+                # Register skills — ensure .skills.entries exists
+                for skill_name in $SKILLS; do
+                    SKILL_EXISTS=$(jq --arg name "$skill_name" '(.skills.entries // {}) | has($name)' "$CONFIG_FILE")
+                    if [[ "$SKILL_EXISTS" == "false" ]]; then
+                        jq --arg name "$skill_name" \
+                           --arg fw "$FRAMEWORK_DEST" \
+                           '.skills.entries = ((.skills.entries // {}) + {($name): { "env": { "SDA_FRAMEWORK_ROOT": $fw } }})' \
+                           "$CONFIG_FILE" > "${CONFIG_FILE}.tmp" && mv "${CONFIG_FILE}.tmp" "$CONFIG_FILE"
+                        echo "  Registered skill '$skill_name'"
+                    fi
+                done
             fi
-
-            # Register skills
-            for skill_name in $SKILLS; do
-                SKILL_EXISTS=$(jq --arg name "$skill_name" '.skills.entries // {} | has($name)' "$CONFIG_FILE")
-                if [[ "$SKILL_EXISTS" == "false" ]]; then
-                    jq --arg name "$skill_name" \
-                       --arg fw "$FRAMEWORK_DEST" \
-                       '.skills.entries[$name] = { "env": { "SDA_FRAMEWORK_ROOT": $fw } }' \
-                       "$CONFIG_FILE" > "${CONFIG_FILE}.tmp" && mv "${CONFIG_FILE}.tmp" "$CONFIG_FILE"
-                    echo "  Registered skill '$skill_name'"
-                fi
-            done
         fi
 
         # Set permissions
@@ -431,7 +460,11 @@ if [[ "$MODE" == "new" ]]; then
     echo "Framework location:      $FRAMEWORK_DEST"
     echo ""
     if [[ -n "$MAIN_WORKSPACE" ]]; then
-        echo "Main Agent wiring:       Routing rules appended to $MAIN_WORKSPACE/AGENTS.md"
+        if [[ -n "$ROUTING_TARGET" ]]; then
+            echo "Main Agent wiring:       Routing rules written to $ROUTING_TARGET"
+        else
+            echo "Main Agent wiring:       Routing rules not written (see warnings above)"
+        fi
         echo ""
     fi
     echo "--- NEXT STEPS ---"
