@@ -146,13 +146,13 @@ the human's language into a precise description of the gap]
 ```
 1. Human makes request
 2. Main Agent recognizes coding need
-3. Main Agent writes workspace/tasks/TASK_XXX.md (status: NEW)
+3. Main Agent writes tasks/TASK_XXX.md (status: NEW)
 4. Coding Agent picks up task (status: IN_PROGRESS)
 5. Coding Agent executes development cycle (Stages 2-7)
    5a. [Stage 3] Coding Agent writes plan review request file
    5b. Main Agent reads request, writes review response file
    5c. Coding Agent reads response, incorporates feedback
-6. Coding Agent writes workspace/delivery/TASK_XXX_REPORT.md
+6. Coding Agent writes delivery/TASK_XXX_REPORT.md
 7. Coding Agent updates task status to DELIVERED
 8. Main Agent reads delivery report
 9. Main Agent verifies domain correctness
@@ -165,7 +165,7 @@ the human's language into a precise description of the gap]
 When the Coding Agent encounters a domain question during implementation:
 
 ```
-Coding Agent: writes workspace/reviews/TASK_XXX_DOMAIN_QUESTION.md
+Coding Agent: writes reviews/TASK_XXX_DOMAIN_QUESTION.md
   - The specific question
   - What the Coding Agent has determined so far
   - The options it sees

@@ -195,7 +195,8 @@ if ! $DRY_RUN; then
         # Copy behavioral templates (AGENTS.md, HEARTBEAT.md, MEMORY.md)
         echo "  Copying behavioral files..."
         cp "$FRAMEWORK_DEST/skills/dev-bootstrap/templates/AGENTS.md" "$AGENT_WORKSPACE/"
-        cp "$FRAMEWORK_DEST/skills/dev-bootstrap/templates/HEARTBEAT.md" "$AGENT_WORKSPACE/"
+        sed "s|{{SDA_FRAMEWORK_ROOT}}|$FRAMEWORK_DEST|g" \
+            "$FRAMEWORK_DEST/skills/dev-bootstrap/templates/HEARTBEAT.md" > "$AGENT_WORKSPACE/HEARTBEAT.md"
         cp "$FRAMEWORK_DEST/skills/dev-bootstrap/templates/MEMORY.md" "$AGENT_WORKSPACE/"
 
         # Copy identity templates if they exist (OpenClaw-specific templates)
@@ -397,12 +398,14 @@ WSEOF
                            --arg name "$OPENCLAW_AGENT_NAME" \
                            --arg ws "$AGENT_WORKSPACE" \
                            --arg ad "$AGENT_DIR" \
+                           --arg fw "$FRAMEWORK_DEST" \
                            '.agents.list = ((.agents.list // []) + [{
                                "id": $id,
                                "name": $name,
                                "workspace": $ws,
                                "agentDir": $ad,
-                               "heartbeat": { "every": "10m" }
+                               "heartbeat": { "every": "10m" },
+                               "env": { "SDA_FRAMEWORK_ROOT": $fw }
                            }])' "$CONFIG_FILE" > "${CONFIG_FILE}.tmp" && mv "${CONFIG_FILE}.tmp" "$CONFIG_FILE"
                         echo "  Added agent '$OPENCLAW_AGENT_ID' to openclaw.json"
                     fi

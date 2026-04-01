@@ -2,7 +2,7 @@
 """poll-tasks.py — Scan a task directory for NEW tasks.
 
 Usage:
-    python poll-tasks.py --tasks-dir /path/to/workspace/tasks/
+    python poll-tasks.py --tasks-dir /path/to/tasks/
 
 Output: JSON to stdout:
     {

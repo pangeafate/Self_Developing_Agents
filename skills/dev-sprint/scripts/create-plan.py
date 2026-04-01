@@ -5,7 +5,7 @@ Usage:
     python create-plan.py \\
         --sprint-id SP_042 \\
         --goal "Add user authentication" \\
-        --output-dir workspace/sprints/ \\
+        --output-dir sprints/ \\
         [--template path/to/SPRINT_PLAN.md]
 
 Output (JSON to stdout):
@@ -32,15 +32,14 @@ from pathlib import Path
 _SCRIPTS_DIR = Path(__file__).parent
 
 
-def _find_framework_root() -> Path:
+def _find_framework_root() -> Path | None:
     """Locate the SELF_DEVELOPING_AGENTS framework root directory.
 
     Resolution order:
     1. ``SDA_FRAMEWORK_ROOT`` environment variable (explicit override).
     2. Walk up from this file's directory until a directory containing both
        ``roles/`` and ``practices/`` sub-directories is found.
-    3. Fall back to the original 3-parent-walk depth
-       (scripts/ -> dev-sprint/ -> skills/ -> SELF_DEVELOPING_AGENTS/).
+    3. Return ``None`` if not found (caller must handle).
     """
     # 1. Environment variable override
     env_root = os.environ.get("SDA_FRAMEWORK_ROOT")
@@ -57,8 +56,7 @@ def _find_framework_root() -> Path:
         if (candidate / "roles").is_dir() and (candidate / "practices").is_dir():
             return candidate
 
-    # 3. Depth-based fallback (original behaviour)
-    return _SCRIPTS_DIR.parent.parent.parent
+    return None
 
 
 # ---------------------------------------------------------------------------
@@ -173,6 +171,12 @@ def _build_parser() -> argparse.ArgumentParser:
         default=None,
         help="Path to the SPRINT_PLAN.md template (default: framework templates/SPRINT_PLAN.md)",
     )
+    parser.add_argument(
+        "--framework-root",
+        type=Path,
+        default=None,
+        help="Path to the Self-Developing Agents framework root (auto-detected if omitted).",
+    )
     return parser
 
 
@@ -184,8 +188,22 @@ def main() -> None:
     # so that import-time env var requirements do not cause test failures.
     if args.template is not None:
         template_path: Path = args.template
+    elif args.framework_root is not None:
+        fw = args.framework_root.resolve()
+        if not fw.is_dir():
+            print(f"ERROR: --framework-root '{fw}' is not a directory.", file=sys.stderr)
+            sys.exit(3)
+        template_path = fw / "templates" / "SPRINT_PLAN.md"
     else:
         framework_root = _find_framework_root()
+        if framework_root is None:
+            print(
+                "ERROR: Could not auto-detect framework root (no ancestor directory "
+                "contains both 'roles/' and 'practices/'). "
+                "Use --framework-root or set SDA_FRAMEWORK_ROOT.",
+                file=sys.stderr,
+            )
+            sys.exit(3)
         template_path = framework_root / "templates" / "SPRINT_PLAN.md"
 
     # Validate template exists early (before any I/O)

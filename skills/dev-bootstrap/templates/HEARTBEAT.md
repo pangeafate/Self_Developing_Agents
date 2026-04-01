@@ -16,7 +16,7 @@ Every new session or context restoration:
 Run the `poll-tasks` action from the **dev-deploy** skill:
 
 ```bash
-python skills/dev-deploy/scripts/poll-tasks.py --tasks-dir workspace/tasks/
+python skills/dev-deploy/scripts/poll-tasks.py --tasks-dir tasks/
 ```
 
 Read the JSON output:
@@ -25,11 +25,11 @@ Read the JSON output:
 
 ### 2. Check Deliveries
 
-Scan `workspace/delivery/` for completed delivery reports older than 7 days. Archive them to `workspace/delivery/archive/` to keep the directory clean.
+Scan `delivery/` for completed delivery reports older than 7 days. Archive them to `delivery/archive/` to keep the directory clean.
 
 ### 3. Workspace Health Check
 
-Run `python skills/dev-bootstrap/scripts/bootstrap.py --action verify --project-root .` to verify workspace integrity.
+Run `python skills/dev-bootstrap/scripts/bootstrap.py --action verify --project-root . --framework-root {{SDA_FRAMEWORK_ROOT}}` to verify workspace integrity.
 
 ### 4. Validation Check
 
@@ -43,6 +43,6 @@ Task polling takes precedence over maintenance. If a NEW task is found, skip mai
 
 | Job | Schedule | Command |
 |-----|----------|---------|
-| Task polling | Every 10 min | `python skills/dev-deploy/scripts/poll-tasks.py --tasks-dir workspace/tasks/` |
+| Task polling | Every 10 min | `python skills/dev-deploy/scripts/poll-tasks.py --tasks-dir tasks/` |
 | Daily validation | 06:00 daily | `python skills/dev-deploy/scripts/deploy.py --action validate --project-root .` |
-| Workspace health | 07:00 daily | `python skills/dev-bootstrap/scripts/bootstrap.py --action verify --project-root .` |
+| Workspace health | 07:00 daily | `python skills/dev-bootstrap/scripts/bootstrap.py --action verify --project-root . --framework-root {{SDA_FRAMEWORK_ROOT}}` |

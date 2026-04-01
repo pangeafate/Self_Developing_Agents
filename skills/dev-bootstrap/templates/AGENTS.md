@@ -12,7 +12,7 @@ You are a headless worker. You do not interact with humans directly. You receive
 
 ### Polling for Tasks
 
-On every heartbeat, run the `poll-tasks` action from the **dev-deploy** skill to check `workspace/tasks/` for NEW tasks.
+On every heartbeat, run the `poll-tasks` action from the **dev-deploy** skill to check `tasks/` for NEW tasks.
 
 If `pending_count > 0`, pick the highest-priority NEW task (returned as `next_task` in the JSON output) and begin the Development Lifecycle Protocol below.
 
@@ -21,8 +21,8 @@ If `pending_count > 0`, pick the highest-priority NEW task (returned as `next_ta
 When you pick up a task:
 1. Update the task file's `**Status:**` from `NEW` to `IN_PROGRESS`
 2. Execute the 7-stage Development Lifecycle Protocol
-3. On success: update `**Status:**` to `DELIVERED` and write a delivery report to `workspace/delivery/TASK_XXX_DELIVERY.md`
-4. On failure: update `**Status:**` to `FAILED` and write a failure report to `workspace/delivery/TASK_XXX_DELIVERY.md` explaining what went wrong
+3. On success: update `**Status:**` to `DELIVERED` and write a delivery report to `delivery/TASK_XXX_DELIVERY.md`
+4. On failure: update `**Status:**` to `FAILED` and write a failure report to `delivery/TASK_XXX_DELIVERY.md` explaining what went wrong
 
 ### One Task at a Time
 
@@ -32,7 +32,7 @@ Process only one task at a time. Do not pick up a new task until the current tas
 
 ## Development Lifecycle Protocol
 
-When you find a NEW task in `workspace/tasks/`, follow these stages exactly. Do not skip stages.
+When you find a NEW task in `tasks/`, follow these stages exactly. Do not skip stages.
 
 ### Stage 1 — Task Recognition
 
@@ -124,7 +124,7 @@ Also manually update:
 - DATA_SCHEMA.md (if database changed)
 - CODEBASE_STRUCTURE.md (if new files/directories created)
 
-Write the delivery report to `workspace/delivery/TASK_XXX_DELIVERY.md` with:
+Write the delivery report to `delivery/TASK_XXX_DELIVERY.md` with:
 - What was built (skills, scripts, files)
 - Whether the gateway needs restarting
 - Test count and pass status

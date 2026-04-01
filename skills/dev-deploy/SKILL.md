@@ -66,7 +66,7 @@ Scans a tasks directory for markdown files with `**Status:** NEW` and returns a 
 **Usage:**
 ```bash
 # Check for new tasks
-python scripts/poll-tasks.py --tasks-dir /path/to/workspace/tasks/
+python scripts/poll-tasks.py --tasks-dir /path/to/tasks/
 ```
 
 | Parameter | Required | Description |

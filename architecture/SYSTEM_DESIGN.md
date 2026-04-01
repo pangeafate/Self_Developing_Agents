@@ -138,7 +138,7 @@ Human -> Main Agent: "I need the system to handle recurring tasks"
                     Coding Agent
                           |
                           | [spawns Helper Agents as needed]
-                          | [writes results to workspace/delivery/TASK_XXX_REPORT.md]
+                          | [writes results to delivery/TASK_XXX_REPORT.md]
                           v
                     Main Agent [reads delivery report]
                           |
@@ -212,7 +212,7 @@ workspace-dev-agent/
 
 Task metadata uses **bold labels** (`**Status:** NEW`) rather than headings (`## Status: NEW`). This keeps the document structure flat and makes in-place status updates straightforward with simple text replacement.
 
-**Delivery Report Format** (`workspace/delivery/TASK_XXX_DELIVERY.md`):
+**Delivery Report Format** (`delivery/TASK_XXX_DELIVERY.md`):
 
 ```markdown
 # Delivery: TASK_XXX — [Title]
@@ -238,12 +238,12 @@ Task metadata uses **bold labels** (`**Status:** NEW`) rather than headings (`##
 ```
 
 **Flow**:
-1. Main Agent writes a task file to the Coding Agent's `workspace/tasks/` directory with `**Status:** NEW`
-2. Coding Agent polls `workspace/tasks/` on heartbeat (every 10 minutes) via `poll-tasks.py`
+1. Main Agent writes a task file to the Coding Agent's `tasks/` directory with `**Status:** NEW`
+2. Coding Agent polls `tasks/` on heartbeat (every 10 minutes) via `poll-tasks.py`
 3. Coding Agent picks up the highest-priority NEW task, updates `**Status:**` to `IN_PROGRESS`
 4. Coding Agent executes the full 7-stage development cycle
 5. Coding Agent deploys built skills to the Main Agent's workspace via `deploy-to-agent.py`
-6. Coding Agent writes `workspace/delivery/TASK_XXX_DELIVERY.md`, updates task `**Status:**` to `DELIVERED`
+6. Coding Agent writes `delivery/TASK_XXX_DELIVERY.md`, updates task `**Status:**` to `DELIVERED`
 7. Main Agent reads the delivery report on its next heartbeat and acts on it (restart gateway if needed)
 
 ---
@@ -267,25 +267,21 @@ Task metadata uses **bold labels** (`**Status:** NEW`) rather than headings (`##
 The Coding Agent maintains a structured workspace for all development artifacts:
 
 ```
-workspace/
-  sprints/
-    SP_XXX_Description.md         # Sprint plan
-    SP_XXX_Description/           # Multi-file sprint folder
+<agent-workspace>/
   tasks/
-    TASK_XXX.md                   # Task definitions (file-based pattern)
+    TASK_XXX.md                   # Task definitions (file-based dispatch)
   delivery/
-    TASK_XXX_REPORT.md            # Delivery reports
-  reviews/
-    TASK_XXX_PLAN_REVIEW_REQUEST.md
-    TASK_XXX_PLAN_REVIEW_RESPONSE.md
-  guidelines/
-    GL-TDD.md                    # Test-driven development
-    GL-RDD.md                    # Documentation-first development
-    GL-ERROR-LOGGING.md          # Error handling and logging
-  tracking/
-    PROJECT_ROADMAP.md
-    PROGRESS.md
-    FEATURE_LIST.md
+    TASK_XXX_DELIVERY.md          # Delivery reports
+  sprints/
+    SP_XXX_Description.md         # Sprint plans
+  skills/
+    dev-bootstrap/                # Bootstrapping skill
+    dev-sprint/                   # Sprint planning skill
+    dev-critique/                 # Self-critique skill
+    dev-deploy/                   # Deployment skill
+  AGENTS.md                       # Behavioral rules
+  HEARTBEAT.md                    # Periodic maintenance
+  MEMORY.md                       # Cross-session state
 ```
 
 ---

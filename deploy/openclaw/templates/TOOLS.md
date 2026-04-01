@@ -4,7 +4,7 @@
 
 - All code changes go through the 7-stage sprint cycle (see AGENTS.md)
 - Never modify deployed scripts directly — change the source and redeploy
-- For all dev-* skill scripts: the `SDA_FRAMEWORK_ROOT` environment variable points to the framework installation directory. This is set automatically by OpenClaw.
+- The `SDA_FRAMEWORK_ROOT` environment variable points to the framework installation directory. It is set in skill configs and baked into HEARTBEAT.md at install time. All dev-* scripts also accept `--framework-root` as a CLI override.
 
 ## Development Skills
 
