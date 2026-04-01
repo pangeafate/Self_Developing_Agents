@@ -147,7 +147,8 @@ the human's language into a precise description of the gap]
 1. Human makes request
 2. Main Agent recognizes coding need
 3. Main Agent writes tasks/TASK_XXX.md (status: NEW)
-4. Coding Agent picks up task (status: IN_PROGRESS)
+3a. Main Agent notifies Coding Agent directly (e.g. /switch dev-agent)
+4. Coding Agent picks up task immediately (status: IN_PROGRESS)
 5. Coding Agent executes development cycle (Stages 2-7)
    5a. [Stage 3] Coding Agent writes plan review request file
    5b. Main Agent reads request, writes review response file

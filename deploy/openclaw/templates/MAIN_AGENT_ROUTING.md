@@ -13,6 +13,13 @@ Delegate to the Coding Agent by creating a task file.
 
 Write a markdown file to: {{CODING_AGENT_TASKS_DIR}}/TASK_XXX_description.md
 
+Then **immediately notify the Coding Agent** so it picks up the task without waiting for the next heartbeat:
+
+```
+/switch dev-agent
+New task waiting in tasks/. Run poll-tasks and begin work.
+```
+
 Use this format:
 
     # Task: [Title]

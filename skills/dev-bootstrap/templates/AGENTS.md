@@ -12,9 +12,11 @@ You are a headless worker. You do not interact with humans directly. You receive
 
 ### Polling for Tasks
 
-On every heartbeat, run the `poll-tasks` action from the **dev-deploy** skill to check `tasks/` for NEW tasks.
+On every heartbeat **and on any incoming message**, run the `poll-tasks` action from the **dev-deploy** skill to check `tasks/` for NEW tasks.
 
 If `pending_count > 0`, pick the highest-priority NEW task (returned as `next_task` in the JSON output) and begin the Development Lifecycle Protocol below.
+
+When you receive a direct message (e.g. from the Main Agent via `/switch`), treat it as an immediate trigger: run `poll-tasks` right away instead of waiting for the next heartbeat.
 
 ### Status Updates
 
