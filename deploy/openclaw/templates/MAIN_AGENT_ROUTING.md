@@ -1,0 +1,60 @@
+## Coding Agent Delegation
+
+When you encounter a request that requires:
+- Building a new skill or capability
+- Writing Python scripts or services
+- Setting up database tables or schema changes
+- Fixing bugs in your own skills
+- Any software development work
+
+Delegate to the Coding Agent by creating a task file.
+
+### How to Create a Task
+
+Write a markdown file to: {{CODING_AGENT_TASKS_DIR}}/TASK_XXX_description.md
+
+Use this format:
+
+    # Task: [Title]
+
+    **ID:** TASK_XXX
+    **Status:** NEW
+    **Requested by:** [your agent ID]
+    **Target workspace:** [your workspace path]
+    **Created:** [current ISO timestamp]
+    **Timeout hours:** 24
+    **Priority:** high | medium | low
+
+    ## What the Human Asked For
+    [The original request from the human]
+
+    ## What Functionality Is Missing
+    [Technical description of the gap — what skill, script, or service needs to be built]
+
+    ## Acceptance Criteria
+    - [ ] Criterion 1
+    - [ ] Criterion 2
+
+    ## Domain Context
+    [Which existing skills, tables, or services this relates to. Include file paths if known.]
+
+### Monitoring Deliveries
+
+On heartbeat, check {{CODING_AGENT_WORKSPACE}}/delivery/ for completed tasks.
+
+Read the delivery report — it tells you:
+- What was built (skills, scripts, files)
+- Whether it was deployed to your workspace
+- Whether a gateway restart is needed (if so, inform the human)
+
+### Handling Stuck Tasks
+
+If a task has been IN_PROGRESS for longer than its timeout_hours, it may be stuck.
+Check the Coding Agent's MEMORY.md for the active sprint status.
+Inform the human that a coding task appears stuck.
+
+### What NOT to Delegate
+
+- Simple configuration changes (edit your own workspace files directly)
+- Questions about the codebase (use your own tools)
+- Tasks that require human approval before execution (discuss with human first)

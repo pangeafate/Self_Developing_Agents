@@ -1,0 +1,123 @@
+<!-- Template: fill in sections below. Remove this comment when populated. -->
+
+# SP_XXX: [Sprint Name]
+
+## Sprint Goal
+
+[One to two sentences describing what this sprint delivers and why it matters.]
+
+<!-- Example:
+Implement a recurring task engine that automatically generates the next instance of a recurring task when the current one completes. This eliminates manual re-creation of repetitive tasks.
+-->
+
+## Current State
+
+[Describe what exists today. Reference specific files, functions, or behaviors.]
+
+<!-- Example:
+Tasks can be created and completed but have no recurrence concept. Users must manually create a new task each time a repeated activity comes up. The `task_domain.py` has `TaskStatus` enum but no recurrence fields.
+-->
+
+## Desired End State
+
+[Describe exactly what the system looks like after this sprint. Be concrete — mention new files, new behaviors, new fields.]
+
+<!-- Example:
+- Tasks have an optional `recurrence_rule` field (daily/weekly/monthly/custom)
+- When a recurring task reaches `done` status, `generate_next_instance()` creates the next occurrence
+- New instances inherit title, priority, and owner from the parent; get a fresh due date
+- The `stale_immune` flag is auto-set on generated instances
+- A new `recurring_task_service.py` handles generation logic
+-->
+
+## What We're NOT Doing
+
+[Explicitly list what is out of scope for this sprint to prevent scope creep.]
+
+<!-- Example:
+- No UI for configuring recurrence rules (CLI/API only)
+- No calendar integration for due date calculation
+- No batch generation of future instances (only next-one-at-a-time)
+-->
+
+## Technical Approach
+
+[Step-by-step description of how to implement the feature. Reference specific modules, functions, and patterns.]
+
+<!-- Example:
+1. Add `recurrence_rule` and `recurrence_parent_id` fields to `task_domain.py`
+2. Create `recurring_task_domain.py` with `RecurrenceRule` enum and `calculate_next_due_date()`
+3. Create `recurring_task_service.py` with `generate_next_instance()` — reads parent task, creates child
+4. Hook into existing `update_task_status()` in `task_service.py` — trigger generation on status=done
+5. Add `stale_immune=True` to generated instances
+-->
+
+## Files to Create/Modify
+
+| File | Action | Purpose |
+|------|--------|---------|
+| [path] | [Create / Modify] | [What changes] |
+
+<!-- Example:
+| `src/lib/recurring_task_domain.py` | Create | RecurrenceRule enum, calculate_next_due_date() |
+| `src/lib/recurring_task_service.py` | Create | generate_next_instance(), query_recurring_tasks() |
+| `src/lib/task_domain.py` | Modify | Add recurrence_rule, recurrence_parent_id fields |
+| `src/lib/task_service.py` | Modify | Hook generation into status update |
+| `test/unit/test_recurring_task_domain.py` | Create | Tests for recurrence calculation |
+| `test/unit/test_recurring_task_service.py` | Create | Tests for instance generation |
+-->
+
+## Testing Strategy
+
+[Describe what tests will be written and the approach — TDD red/green/refactor.]
+
+<!-- Example:
+Following GL-TDD.md:
+
+1. **Domain tests first**: Test `calculate_next_due_date()` for daily/weekly/monthly rules, edge cases (month-end, leap year)
+2. **Service tests**: Test `generate_next_instance()` with mocked database API calls — verify field inheritance, stale_immune flag, due date calculation
+3. **Integration path**: Test status update hook triggers generation (mock at service boundary)
+4. **Edge cases**: No recurrence rule (skip), already-generated next instance (dedup), cancelled parent (no generation)
+-->
+
+## Success Criteria
+
+- [ ] [Criterion 1 — specific and verifiable]
+- [ ] [Criterion 2]
+- [ ] [Criterion 3]
+- [ ] All new code has passing tests
+- [ ] All existing tests still pass
+- [ ] PROGRESS.md updated
+- [ ] PROJECT_ROADMAP.md updated (if milestone completed)
+
+<!-- Example:
+- [ ] `generate_next_instance()` creates a child task with correct fields
+- [ ] Due date advances correctly for daily, weekly, and monthly rules
+- [ ] `stale_immune` is auto-set to True on generated instances
+- [ ] Duplicate generation is prevented (idempotency)
+- [ ] All new code has passing tests
+- [ ] All existing tests still pass
+- [ ] PROGRESS.md updated
+-->
+
+## Review Log
+
+### Pre-Implementation Review
+- **Iteration 1** ([DATE]): [Reviewer] found [N] [SEVERITY]. Files reviewed: [file1, file2]
+- **Iteration 2** ([DATE]): [Reviewer] found [N] issues. Files reviewed: [file1, file2]
+
+<!-- Example (this is the format validate_sprint.py expects — each iteration is a bullet):
+### Pre-Implementation Review
+- **Iteration 1** (2026-01-01): architect-reviewer found 1 CRITICAL, 2 HIGH, 1 MEDIUM. Files reviewed: sprint plan, src/lib/service.py, src/models/entity.py
+- **Iteration 2** (2026-01-02): code-reviewer found 0 CRITICAL/HIGH. Files reviewed: sprint plan, src/lib/service.py
+-->
+
+### Post-Implementation Review
+- **Iteration 1** ([DATE]): Found [N] [SEVERITY] issues. Files reviewed: [file1, file2]
+- **Iteration 2** ([DATE]): Found [N] issues. Files reviewed: [file1, file2]
+
+<!-- Example:
+### Post-Implementation Review
+- **Iteration 1** (2026-01-03): debugger found 1 HIGH issue. Files reviewed: src/lib/service.py, test/unit/test_service.py
+- **Iteration 2** (2026-01-04): code-reviewer found 0 issues. Files reviewed: src/lib/service.py (clean iteration — ready to deploy)
+-->
