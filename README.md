@@ -6,7 +6,7 @@
 
 **Give your AI agent a developer.** This framework deploys a headless Coding Agent alongside your existing agent. When your agent lacks a capability, the Coding Agent builds it — writes the code, tests it, reviews it with isolated sub-agents, and deploys it directly to your agent's workspace.
 
-Distilled from 1000+ sprints of real-world agent-driven development. 251 tests. Battle-tested.
+Distilled from 1000+ sprints of real-world agent-driven development. 313 tests. Battle-tested.
 
 ## What Happens When You Deploy This
 
@@ -111,17 +111,18 @@ The Main Agent and Coding Agent communicate via file-based task dispatch. The Co
 ```
 ├── install.sh                One-command installer (works on any platform)
 ├── BOOTSTRAP.md              Day 1 setup (manual path)
-├── AGENT_INSTRUCTIONS.md     15 operating rules
+├── AGENT_INSTRUCTIONS.md     16 operating rules
 │
 ├── architecture/             System design docs
 │   ├── SYSTEM_DESIGN.md      3-tier architecture + task dispatch
 │   ├── ROUTING_RULES.md      How tasks flow between agents
 │   └── CONTEXT_ISOLATION.md  Why isolation catches more bugs
 │
-├── practices/                8 development methodology guides
+├── practices/                9 development methodology guides
 │   ├── GL-TDD.md, GL-RDD.md, GL-ERROR-LOGGING.md
 │   ├── GL-SPRINT-DISCIPLINE.md, GL-SELF-CRITIQUE.md
-│   └── GL-DEPLOYMENT.md, GL-CONTEXT-MANAGEMENT.md, GL-TEMPLATE-ENFORCEMENT.md
+│   ├── GL-DEPLOYMENT.md, GL-CONTEXT-MANAGEMENT.md, GL-TEMPLATE-ENFORCEMENT.md
+│   └── GL-DOC-RECONCILIATION.md   (added SP_001 — frontmatter, single-source, TBD-by, reconciliation checklist)
 │
 ├── roles/                    11 sub-agent role definitions + index
 │
@@ -133,7 +134,9 @@ The Main Agent and Coding Agent communicate via file-based task dispatch. The Co
 │   ├── dev-critique/         Sub-agent orchestration (gather-context + parse-findings)
 │   └── dev-deploy/           Validation, git push, task polling, cross-agent deployment
 │
-├── validators/               Python enforcement (TDD, RDD, structure, sprint, workspace)
+├── validators/               Python enforcement
+│   ├── validate_structure, validate_workspace, validate_tdd, validate_rdd, validate_sprint
+│   └── validate_doc_reality (added SP_001 — dead paths, TBD-by decay, frontmatter, paired-file duplication)
 │
 ├── deploy/openclaw/          OpenClaw-specific extras
 │   ├── README.md             Detailed OpenClaw setup guide
@@ -174,28 +177,63 @@ The agent will deploy the Coding Agent alongside itself.
 
 ## Configuration
 
-Create `.validators.yml` in your project root to customize:
+Create `.validators.yml` in your project root to customize. The file is shared across validators; each consumer ignores keys it does not recognize.
 
 ```yaml
+# validate_workspace.py
 bootstrap_files: [AGENT_INSTRUCTIONS.md, AGENT_IDENTITY.md]
+
+# validate_structure.py
 src_dir: src/
 required_files: [PROJECT_CONTEXT.md, ARCHITECTURE.md, PROGRESS.md]
 required_dirs: [test/unit, test/integration]
 layer_rules:
   models: {forbidden_imports: [requests, subprocess]}
+
+# validate_doc_reality.py
+doc_reality:
+  exclude_dirs: []                    # extends defaults (templates, vision, examples, etc.)
+  dead_path_exclusions: []            # literal token strings allowed to be "dead"
+  dead_path_glob_exclusions: []       # fnmatch patterns (e.g., PROGRESS_ARCHIVE_*.md)
+  frontmatter_required:               # meta-docs that must carry frontmatter
+    - PROGRESS.md
+    - PROJECT_ROADMAP.md
+    - FEATURE_LIST.md
+  paired_files:                       # files checked for duplication
+    - [AGENT_INSTRUCTIONS.md, CLAUDE.md]
+  duplication_threshold: 30
 ```
 
 All settings optional — sensible defaults built in.
 
+## Documentation Reality Discipline (SP_001)
+
+The framework also enforces that meta-documentation stays aligned with shipped reality. Drift is a structural problem (aspirational docs frozen in time, copy-paste duplication, dead path references, stale `TBD` markers) — `validators/validate_doc_reality.py` is the structural fix.
+
+Four stages, each independently skippable:
+
+| Stage | Catches |
+|---|---|
+| A — Dead paths | Backtick-wrapped path references in meta-docs that no longer exist on disk |
+| B — TBD-by decay | `TBD-by: SP_NNN` markers whose target sprint has already elapsed (per `PROGRESS.md`) |
+| C — Frontmatter | Missing/malformed `status` and `last-reconciled` keys; explicitly rejects the `1970-01-01` template sentinel |
+| D — Duplication | Long identical runs between paired files (e.g., `AGENT_INSTRUCTIONS.md` ↔ `CLAUDE.md`); use `@inherits:` to mark intentional inheritance |
+
+Conventions are codified in [`practices/GL-DOC-RECONCILIATION.md`](practices/GL-DOC-RECONCILIATION.md). Rule 16 of `AGENT_INSTRUCTIONS.md` requires running this validator before deploy and completing a Doc Reconciliation Checklist at Stage 7.
+
 ## Numbers
 
-- **70 files** in the framework
-- **251 tests** passing
-- **8 practice guides** (TDD, RDD, error handling, sprint discipline, self-critique, deployment, context management, template enforcement)
+- **77 files** in the framework
+- **313 tests** passing
+- **9 practice guides** (TDD, RDD, error handling, sprint discipline, self-critique, deployment, context management, template enforcement, **doc reconciliation**)
 - **11 sub-agent roles** for research and quality review
-- **5 validators** enforcing the 7-stage cycle
+- **6 validators** enforcing the 7-stage cycle (structure, workspace, TDD, RDD, sprint, **doc-reality**)
 - **4 executable skills** automating the development lifecycle
 - **1 platform-agnostic installer** (one command, works on any agent with read/write/shell)
+
+## Recent Sprints
+
+- **SP_001 (2026-04-13) — Doc Reality Discipline.** Added `validate_doc_reality.py` (4 stages), `GL-DOC-RECONCILIATION.md`, Rule 16, frontmatter on 7 meta-doc templates, Doc Reconciliation Checklist in `SPRINT_PLAN.md`, seeded `.validators.yml`. The framework repo now passes its own new validator with exit 0. See [`workspace/sprints/SP_001_Doc_Reality_Discipline.md`](workspace/sprints/SP_001_Doc_Reality_Discipline.md).
 
 ## License
 
