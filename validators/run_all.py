@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Orchestrator: run all 5 validators in sequence.
+"""Orchestrator: run all 6 validators in sequence.
 
 Usage:
     python run_all.py <project_root> [--bootstrap] [--skip NAME[,NAME]] [--fix]
@@ -26,6 +26,7 @@ ALL_VALIDATORS = [
     "validate_tdd",
     "validate_rdd",
     "validate_sprint",
+    "validate_doc_reality",
 ]
 
 BOOTSTRAP_VALIDATORS = [

@@ -1,4 +1,9 @@
-<!-- Template: fill in sections below. Remove this comment when populated. -->
+---
+status: living
+last-reconciled: 1970-01-01
+authoritative-for: [features]
+---
+<!-- Template: fill in sections below. Replace last-reconciled with today's ISO date when you copy. Remove this comment when populated. -->
 
 # Feature List
 

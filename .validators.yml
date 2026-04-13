@@ -1,0 +1,21 @@
+# Validator configuration for the Self-Developing Agents Framework repo itself.
+#
+# Shared config file schema:
+#   - Top-level key `doc_reality:`   — consumed by validators/validate_doc_reality.py
+#   - Top-level key `required_files:` (list) — consumed by validators/validate_structure.py
+#   - Top-level key `bootstrap_files:` (list) — consumed by validators/validate_workspace.py
+# Each consumer ignores keys it does not recognize.
+
+doc_reality:
+  exclude_dirs: []
+  dead_path_exclusions:
+    - test/unit/
+    - test/integration/
+    - test/fixtures/
+    - workspace/sprints/SP_001_Description.md
+  dead_path_glob_exclusions: []
+  frontmatter_required:
+    - PROGRESS.md
+  paired_files:
+    - [AGENT_INSTRUCTIONS.md, CLAUDE.md]
+  duplication_threshold: 30

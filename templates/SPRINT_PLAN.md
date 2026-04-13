@@ -1,4 +1,7 @@
 <!-- Template: fill in sections below. Remove this comment when populated. -->
+<!-- Note: Sprint plans do NOT carry frontmatter. They live under `workspace/sprints/`
+     which is excluded from validate_doc_reality.py's frontmatter manifest (Stage C).
+     Sprint plans are transient implementation artifacts, not meta-docs. -->
 
 # SP_XXX: [Sprint Name]
 
@@ -89,6 +92,19 @@ Following GL-TDD.md:
 - [ ] All existing tests still pass
 - [ ] PROGRESS.md updated
 - [ ] PROJECT_ROADMAP.md updated (if milestone completed)
+
+### Doc Reconciliation Checklist
+
+Complete at Stage 7 (Documentation). Tick each meta-doc whose subject matter this sprint touched.
+
+- [ ] `FEATURE_LIST.md` — feature statuses, sprint numbers, implementation paths
+- [ ] `PROJECT_ROADMAP.md` — milestone status for touched phases
+- [ ] `ARCHITECTURE.md` — only if system design changed
+- [ ] `DATA_SCHEMA.md` — only if schema changed
+- [ ] `CODEBASE_STRUCTURE.md` — only if directories/files moved
+- [ ] `USER_STORIES.md` — if acceptance criteria were satisfied
+- [ ] `last-reconciled` bumped on each touched meta-doc
+- [ ] `python validators/validate_doc_reality.py <project_root>` returns 0
 
 <!-- Example:
 - [ ] `generate_next_instance()` creates a child task with correct fields

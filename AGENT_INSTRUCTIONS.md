@@ -6,11 +6,11 @@ These rules are project-agnostic. Project-specific configuration (database detai
 
 **Development cycle reference**: All work follows the 7-stage self-improvement cycle defined in `architecture/SYSTEM_DESIGN.md`: (1) Task Recognition, (2) Sprint Planning, (3) Plan Review, (4) Implementation, (5) Post-Implementation Review, (6) Deployment, (7) Documentation. No stage may be skipped. Validators in `validators/` enforce this.
 
-**Cross-cutting practices**: `practices/GL-CONTEXT-MANAGEMENT.md` applies at every stage transition -- re-read the sprint plan, persist intermediate state, provide full context to sub-agents. `practices/GL-TEMPLATE-ENFORCEMENT.md` applies whenever output is generated -- read the template before producing output, never freestyle.
+**Cross-cutting practices**: `practices/GL-CONTEXT-MANAGEMENT.md` applies at every stage transition -- re-read the sprint plan, persist intermediate state, provide full context to sub-agents. `practices/GL-TEMPLATE-ENFORCEMENT.md` applies whenever output is generated -- read the template before producing output, never freestyle. `practices/GL-DOC-RECONCILIATION.md` applies at Stage 7 -- reconcile meta-docs with shipped reality before the sprint closes.
 
 ---
 
-## The 15 Rules
+## The 16 Rules
 
 ### 1. Test-Driven Development is Non-Negotiable
 
@@ -68,7 +68,7 @@ After implementation, update all affected documentation:
 - `ARCHITECTURE.md` -- if system design changed.
 - `DATA_SCHEMA.md` -- if database schema changed.
 
-This is Stage 7 of the development cycle. It is not optional.
+This is Stage 7 of the development cycle. It is not optional. See also Rule 16 for the reconciliation checklist and the `last-reconciled` frontmatter contract.
 
 ### 8. Sprint Plan Self-Critique
 
@@ -135,3 +135,11 @@ The agent may make certain changes autonomously without a full sprint cycle:
 **Audit trail**: After any autonomous self-improvement, append a one-line entry to a self-improvement log so the human has visibility into what changed and why.
 
 **Override**: When told to present a proposal first, do that instead of making the change directly.
+
+### 16. Documentation Reconciliation
+
+Before Stage 6 (Deployment), run `validators/validate_doc_reality.py <project_root>`; a failure blocks deployment. At Stage 7 (Documentation), complete the reconciliation checklist: for every meta-doc whose subject-matter was touched by this sprint, update content and bump `last-reconciled`.
+
+Rule 15's autonomous-update clause remains in effect for docs-only changes: such changes must still bump `last-reconciled` and may be validated post-hoc, but they do not require the full Stage-7 reconciliation pass.
+
+See `practices/GL-DOC-RECONCILIATION.md` for the frontmatter convention, the single-source rule and the `@inherits:` directive, vision-doc quarantine, and the TBD-by decay rule.
