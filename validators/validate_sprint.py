@@ -14,7 +14,7 @@ Enforced stages:
     Stage 2  — Sprint plan has all required sections
     Stage 3  — Pre-Implementation Review Log: >= 2 entries with severity + files reviewed
     Stage 5  — Post-Implementation Review Log: >= 2 entries with severity + files reviewed
-    Stage 7  — PROGRESS.md updated (advisory, git-based, never fails the run)
+    Stage 6  — PROGRESS.md updated (advisory, git-based, never fails the run; Stage 6 = Documentation per SP_002)
 """
 from __future__ import annotations
 
@@ -152,7 +152,7 @@ def check_git_progress_updated(project_root: Path) -> None:
         )
         if result.returncode == 0 and not result.stdout.strip():
             print(
-                "[Stage 7] ADVISORY: PROGRESS.md has no uncommitted changes. "
+                "[Stage 6] ADVISORY: PROGRESS.md has no uncommitted changes. "
                 "Remember to update it after the sprint.",
                 file=sys.stderr,
             )
@@ -334,7 +334,7 @@ def main(argv: list[str]) -> int:
         if not stage5_post_implementation_review(sprint_id, plan_text):
             passed = False
 
-    # Stage 7 (advisory only — never sets passed=False)
+    # Stage 6 (advisory only — never sets passed=False; Documentation per SP_002 swap)
     if gate == "full":
         check_git_progress_updated(project_root)
 

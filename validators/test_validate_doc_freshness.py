@@ -301,8 +301,15 @@ def test_stage_f2_all_claims_empty_and_no_meta_docs_passes():
     assert v.stage_f2(parsed, {"src/foo.py"}) is True
 
 
-def test_stage_f2_empty_diff_advisory_passes():
+def test_stage_f2_empty_diff_with_positive_claims_fails():
+    """A sprint plan with declared features but no diff is unfulfilled — must fail."""
     parsed = {"features": ["F-1"], "user_stories": [], "schema_touched": False, "structure_touched": False}
+    assert v.stage_f2(parsed, set()) is False
+
+
+def test_stage_f2_empty_diff_no_claims_advisory_passes():
+    """Empty diff with no positive claims is the legitimate fresh-sprint state."""
+    parsed = {"features": [], "user_stories": [], "schema_touched": False, "structure_touched": False}
     assert v.stage_f2(parsed, set()) is True
 
 

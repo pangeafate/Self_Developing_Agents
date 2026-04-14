@@ -148,10 +148,10 @@ The agent must not deploy code that is not committed. Uncommitted changes:
 
 ## Deployment Failure Protocol
 
-When deployment fails (CI/CD error, test failure in pipeline, infrastructure issue):
+When deployment (Stage 7) fails (CI/CD error, test failure in pipeline, infrastructure issue):
 
-1. **Do NOT proceed to the documentation stage** (GL-SPRINT-DISCIPLINE.md post-feature checklist)
-2. **Do NOT mark the sprint as complete in PROGRESS.md**
+1. **Do NOT mark the sprint as complete in PROGRESS.md** — Stage 6 (Documentation) already happened on the assumption deploy would follow. If deploy fails permanently, either revert the Stage 6 doc bumps or open a follow-up sprint to reconcile.
+2. **Do NOT delete `.docs_reconciled`** — it is the receipt for this attempt's docs state. A retry of deploy reuses it; a new Stage 6 run would overwrite it.
 3. **Diagnose the failure**: Read CI/CD logs, identify root cause
 4. **Fix and re-deploy** if the fix is straightforward
 5. **Report to human** if the failure is:

@@ -113,7 +113,7 @@ The validators are Python scripts that enforce the 7-stage development cycle. Th
 python validators/run_all.py --bootstrap
 ```
 
-The `--bootstrap` flag runs only `validate_structure.py` and `validate_workspace.py` — the other 3 validators (TDD, RDD, sprint) are meaningful only after Sprint 1 completes.
+The `--bootstrap` flag runs only `validate_structure.py` and `validate_workspace.py` — the other 5 validators (TDD, RDD, sprint, doc-reality, doc-freshness) are meaningful only after Sprint 1 completes.
 
 Expected output: all checks pass (directory structure exists, no oversized files, no credentials in workspace files).
 

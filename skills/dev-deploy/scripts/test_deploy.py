@@ -440,3 +440,145 @@ def test_lockfile_warning_suppressed_when_sprint_skipped(tmp_path: Path) -> None
         f"Lockfile warning should be suppressed when validate_sprint is skipped.\n"
         f"stderr: {result.stderr}"
     )
+
+
+# ---------------------------------------------------------------------------
+# Stage 6 → 7 docs-reconciled lockfile gate (Rule 16)
+# ---------------------------------------------------------------------------
+
+
+def _make_validators_passing(tmp_path: Path) -> Path:
+    """Helper: set up a fake validators dir where run_all.py always passes."""
+    vdir = tmp_path / "validators"
+    vdir.mkdir()
+    run_all = vdir / "run_all.py"
+    run_all.write_text(
+        "import sys\nprint('all pass')\nsys.exit(0)\n", encoding="utf-8"
+    )
+    return vdir
+
+
+def test_push_blocked_when_active_sprint_but_lockfile_missing(tmp_path):
+    """Stage 7 (Deployment) MUST NOT proceed if `.docs_reconciled` is missing
+    while PROGRESS.md declares an active sprint."""
+    project = make_git_repo(tmp_path)
+    validators_dir = _make_validators_passing(tmp_path)
+    (project / "PROGRESS.md").write_text(
+        "**Current:** SP_999_TestSprint\n", encoding="utf-8"
+    )
+    (project / "feature.txt").write_text("change\n")
+    result = run_deploy(
+        "--action", "push",
+        "--project-root", str(project),
+        "--validators-dir", str(validators_dir),
+        "--message", "SP_999: should be blocked",
+    )
+    assert result.returncode == 1, result.stderr
+    payload = json.loads(result.stdout)
+    assert payload["status"] == "blocked"
+    assert "Stage 7 by Rule 16" in payload["error"]
+    assert ".docs_reconciled" in payload["error"]
+
+
+def test_push_blocked_when_lockfile_sprint_id_mismatches_active(tmp_path):
+    """Stage 7 MUST detect a stale lockfile from a previous sprint."""
+    project = make_git_repo(tmp_path)
+    validators_dir = _make_validators_passing(tmp_path)
+    (project / "PROGRESS.md").write_text(
+        "**Current:** SP_002_Current\n", encoding="utf-8"
+    )
+    # Stale lockfile from a previous sprint
+    (project / ".docs_reconciled").write_text(
+        json.dumps({
+            "schema_version": 1,
+            "sprint_id": "SP_001_Previous",
+            "passed_at": "2026-04-01T00:00:00Z",
+        }),
+        encoding="utf-8",
+    )
+    (project / "feature.txt").write_text("change\n")
+    result = run_deploy(
+        "--action", "push",
+        "--project-root", str(project),
+        "--validators-dir", str(validators_dir),
+        "--message", "SP_002: should be blocked, stale lockfile",
+    )
+    assert result.returncode == 1
+    payload = json.loads(result.stdout)
+    assert payload["status"] == "blocked"
+    assert "stale" in payload["error"].lower()
+
+
+def test_push_passes_when_lockfile_matches_active_sprint(tmp_path):
+    """Stage 7 succeeds when `.docs_reconciled` is present and matches sprint."""
+    project = make_git_repo(tmp_path)
+    validators_dir = _make_validators_passing(tmp_path)
+    (project / "PROGRESS.md").write_text(
+        "**Current:** SP_003_OK\n", encoding="utf-8"
+    )
+    (project / ".docs_reconciled").write_text(
+        json.dumps({
+            "schema_version": 1,
+            "sprint_id": "SP_003_OK",
+            "passed_at": "2026-04-14T10:00:00Z",
+        }),
+        encoding="utf-8",
+    )
+    (project / "feature.txt").write_text("change\n")
+    result = run_deploy(
+        "--action", "push",
+        "--project-root", str(project),
+        "--validators-dir", str(validators_dir),
+        "--message", "SP_003: docs reconciled, deploying",
+    )
+    # Push to remote will likely fail (no remote configured), but the lockfile
+    # gate must let us PAST validation. Acceptable exit codes: 0 (full success
+    # or "nothing to commit" path) or 2 (git push error). NOT 1 (gate block).
+    assert result.returncode in (0, 2), (
+        f"Expected lockfile gate to pass (exit 0 or 2), got {result.returncode}.\n"
+        f"stdout: {result.stdout}\nstderr: {result.stderr}"
+    )
+
+
+def test_push_passes_when_no_active_sprint(tmp_path):
+    """Lockfile gate is skipped when PROGRESS.md has no active sprint marker
+    (between-sprints state)."""
+    project = make_git_repo(tmp_path)
+    validators_dir = _make_validators_passing(tmp_path)
+    (project / "PROGRESS.md").write_text(
+        "# Progress\n\n_No active sprint._\n", encoding="utf-8"
+    )
+    (project / "feature.txt").write_text("change\n")
+    result = run_deploy(
+        "--action", "push",
+        "--project-root", str(project),
+        "--validators-dir", str(validators_dir),
+        "--message", "between sprints, no gate",
+    )
+    assert result.returncode in (0, 2)
+
+
+def test_push_blocked_when_lockfile_is_symlink(tmp_path):
+    """Refuse to read the lockfile if it's been replaced with a symlink
+    (defense against pointing the validator at attacker-controlled JSON)."""
+    project = make_git_repo(tmp_path)
+    validators_dir = _make_validators_passing(tmp_path)
+    (project / "PROGRESS.md").write_text(
+        "**Current:** SP_004_Sym\n", encoding="utf-8"
+    )
+    target = tmp_path / "evil.json"
+    target.write_text(
+        json.dumps({"schema_version": 1, "sprint_id": "SP_004_Sym"}), encoding="utf-8"
+    )
+    import os
+    os.symlink(target, project / ".docs_reconciled")
+    (project / "feature.txt").write_text("change\n")
+    result = run_deploy(
+        "--action", "push",
+        "--project-root", str(project),
+        "--validators-dir", str(validators_dir),
+        "--message", "symlink should be refused",
+    )
+    assert result.returncode == 1
+    payload = json.loads(result.stdout)
+    assert "symlink" in payload["error"].lower()

@@ -506,7 +506,22 @@ def stage_f2(
     if changed_files is None:
         print("[Stage F-2] ADVISORY: git unavailable; skipping.", file=sys.stderr)
         return True
+    features = parsed.get("features") or []
+    user_stories = parsed.get("user_stories") or []
+    schema_touched = bool(parsed.get("schema_touched") or False)
+    structure_touched = bool(parsed.get("structure_touched") or False)
+    has_positive_claims = bool(features or user_stories or schema_touched or structure_touched)
+
     if not changed_files:
+        if has_positive_claims:
+            print(
+                "[Stage F-2] FAIL: empty diff but sprint plan declares positive claims "
+                f"(features={features}, user_stories={user_stories}, "
+                f"schema_touched={schema_touched}, structure_touched={structure_touched}). "
+                "Either commit the work or remove the unfulfilled claims.",
+                file=sys.stderr,
+            )
+            return False
         print("[Stage F-2] ADVISORY: empty diff; skipping.", file=sys.stderr)
         return True
 
@@ -514,10 +529,6 @@ def stage_f2(
     # Meta-docs are recognized ONLY at project root (path has no parent dir).
     # A "templates/DATA_SCHEMA.md" basename does not count as a meta-doc match.
     basenames = {p for p in changed_files if "/" not in p}
-    features = parsed.get("features") or []
-    user_stories = parsed.get("user_stories") or []
-    schema_touched = bool(parsed.get("schema_touched") or False)
-    structure_touched = bool(parsed.get("structure_touched") or False)
 
     if features and "FEATURE_LIST.md" not in basenames:
         failures.append(
@@ -655,15 +666,14 @@ def stage_f4(
                     "the freshness marker did not"
                 )
             continue
-        if not is_added and minus_date is None:
-            failures.append(
-                f"{path}: `last-reconciled` addition without removal — malformed diff"
-            )
-            continue
+        # NB: `not is_added and minus_date is None` is LEGITIMATE — it means
+        # frontmatter was added to a previously-unfrontmattered meta-doc.
+        # This is the migration path for projects adopting the convention.
+        # We accept the `+last-reconciled:` line as a valid bump.
+
         # Closing the same-date loophole: a `-` and `+` line with identical
-        # values means the line was in a diff context but the value didn't
-        # actually change (git can report this under some unified-diff layouts).
-        if not is_added and minus_date is not None and plus_date == minus_date:
+        # values means the value didn't actually change.
+        if minus_date is not None and plus_date == minus_date:
             failures.append(
                 f"{path}: `last-reconciled` unchanged ({plus_date}); value must increase"
             )
@@ -680,6 +690,18 @@ def stage_f4(
             failures.append(
                 f"{path}: `last-reconciled` bumped backwards ({new_date} < sprint start {start_date})"
             )
+            continue
+        # Within-sprint rollback: bump-from-newer-to-older.
+        if minus_date is not None:
+            try:
+                old_date = _dt.date.fromisoformat(minus_date)
+                if new_date < old_date:
+                    failures.append(
+                        f"{path}: `last-reconciled` rolled back within sprint "
+                        f"({new_date} < previous {old_date})"
+                    )
+            except ValueError:
+                pass  # malformed previous value; let the new value's validation suffice
 
     if failures:
         for f in failures:
@@ -700,6 +722,10 @@ def write_lockfile(
     stages_checked: list[str],
     git_base: str | None,
 ) -> Path:
+    """Atomic lockfile write. Uses a unique tempname per process to avoid races
+    between concurrent run_all.py invocations. Refuses to overwrite a symlink."""
+    import tempfile
+
     num = _SPRINT_NUM_RE.match(sprint_id)
     sprint_num = int(num.group(1)) if num else None
     payload = {
@@ -711,9 +737,26 @@ def write_lockfile(
         "git_base": git_base or "",
     }
     final = project_root / _LOCKFILE_NAME
-    tmp = project_root / (_LOCKFILE_NAME + ".tmp")
-    tmp.write_text(json.dumps(payload, indent=2, sort_keys=True) + "\n", encoding="utf-8")
-    os.replace(tmp, final)
+    if final.is_symlink():
+        # Refuse to follow a symlink — could redirect writes outside the project.
+        raise OSError(f"{_LOCKFILE_NAME} exists as a symlink; refusing to overwrite for safety")
+    body = json.dumps(payload, indent=2, sort_keys=True) + "\n"
+    fd, tmp_path = tempfile.mkstemp(
+        prefix=f"{_LOCKFILE_NAME}.", suffix=".tmp", dir=str(project_root)
+    )
+    try:
+        with os.fdopen(fd, "w", encoding="utf-8") as fh:
+            fh.write(body)
+            fh.flush()
+            os.fsync(fh.fileno())
+        os.replace(tmp_path, final)
+    except Exception:
+        # Best-effort cleanup of the tempfile if something went wrong.
+        try:
+            os.unlink(tmp_path)
+        except OSError:
+            pass
+        raise
     return final
 
 

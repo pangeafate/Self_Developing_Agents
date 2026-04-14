@@ -475,12 +475,32 @@ def stage_a_dead_paths(
             if not is_path_under(candidate, project_root):
                 # Path-traversal attempt — ignore silently, do not fail.
                 continue
-            if candidate.exists() or candidate.is_symlink():
+            # Check via lstat — does NOT follow symlinks. Prevents the
+            # symlink false-pass: a malicious commit adding `dead/path` as a
+            # symlink to `/tmp/anywhere` could otherwise mark a deleted file
+            # as alive. If the path is a symlink, also verify the resolved
+            # target stays inside the project root.
+            try:
+                candidate.lstat()
+            except OSError:
+                rel = md_path.relative_to(project_root)
+                failures.append(
+                    f"[Stage A] FAIL: {rel}:{line_no} references nonexistent path `{token}`"
+                )
                 continue
-            rel = md_path.relative_to(project_root)
-            failures.append(
-                f"[Stage A] FAIL: {rel}:{line_no} references nonexistent path `{token}`"
-            )
+            if candidate.is_symlink():
+                try:
+                    resolved = candidate.resolve(strict=True)
+                    if not is_path_under(resolved, project_root):
+                        rel = md_path.relative_to(project_root)
+                        failures.append(
+                            f"[Stage A] FAIL: {rel}:{line_no} symlink `{token}` "
+                            "escapes the project root"
+                        )
+                        continue
+                except (OSError, RuntimeError):
+                    # Broken symlink — accept (matches prior contract for symlinks).
+                    pass
     return failures
 
 

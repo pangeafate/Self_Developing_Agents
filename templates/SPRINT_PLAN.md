@@ -117,6 +117,8 @@ Complete at Stage 6 (Documentation). Tick each meta-doc whose subject matter thi
 - [ ] `USER_STORIES.md` — if acceptance criteria were satisfied
 - [ ] `last-reconciled` bumped on each touched meta-doc
 - [ ] `python validators/validate_doc_reality.py <project_root>` returns 0
+- [ ] `python validators/validate_doc_freshness.py <project_root>` returns 0 (writes `.docs_reconciled` lockfile)
+- [ ] `.docs_reconciled` lockfile present at project root naming the current sprint
 
 <!-- Example:
 - [ ] `generate_next_instance()` creates a child task with correct fields

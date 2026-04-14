@@ -15,8 +15,8 @@ as the central orchestrator -- all other roles communicate through it.
 | 3 | Plan Review | architect-reviewer, code-reviewer, main-agent (optional) |
 | 4 | Implementation | coding-agent, test-enforcer, researcher, analyzer |
 | 5 | Post-Implementation Review | architect-reviewer, code-reviewer, debugger, security-auditor*, performance-reviewer* |
-| 6 | Deployment | coding-agent |
-| 7 | Documentation | coding-agent |
+| 6 | Documentation | coding-agent |
+| 7 | Deployment | coding-agent |
 
 *Optional -- invoked when feature characteristics warrant it.*
 

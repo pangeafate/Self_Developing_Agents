@@ -49,6 +49,97 @@ def _check_pre_impl_lockfile(project_root: Path) -> str | None:
 
 
 # ---------------------------------------------------------------------------
+# Stage 6 → 7 docs-reconciled gate (per AGENT_INSTRUCTIONS.md Rule 16)
+# ---------------------------------------------------------------------------
+
+import re as _re
+
+_ACTIVE_SPRINT_RE = _re.compile(r"\*\*Current:\*\*\s+(SP_\S+)")
+
+
+def _read_active_sprint(project_root: Path) -> str | None:
+    progress = project_root / "PROGRESS.md"
+    if not progress.exists():
+        return None
+    try:
+        text = progress.read_text(encoding="utf-8-sig")
+    except (OSError, UnicodeDecodeError):
+        return None
+    m = _ACTIVE_SPRINT_RE.search(text)
+    return m.group(1) if m else None
+
+
+def _check_docs_reconciled_lockfile(project_root: Path) -> str | None:
+    """Return failure message string or None on pass.
+
+    Stage 7 (Deployment) requires Stage 6 (Documentation) to have produced a
+    valid `.docs_reconciled` lockfile. Verifies:
+      1. file exists
+      2. parses as JSON
+      3. schema_version == 1
+      4. sprint_id matches the current active sprint per PROGRESS.md
+    Skipped when no active sprint declared (PROGRESS.md absent or no Current marker).
+    """
+    sprint_id = _read_active_sprint(project_root)
+    if sprint_id is None:
+        return None  # No active sprint — gate is moot
+
+    lockfile = project_root / ".docs_reconciled"
+    # Open with O_NOFOLLOW to atomically refuse symlinks — closes the TOCTOU
+    # race between is_symlink() and read_text(). On all POSIX systems
+    # O_NOFOLLOW makes the open fail with ELOOP if the final path component
+    # is a symlink. Windows does not support O_NOFOLLOW (the flag is undefined),
+    # so fall back to a stat-based check there.
+    import os as _os
+    nofollow = getattr(_os, "O_NOFOLLOW", None)
+    try:
+        if nofollow is not None:
+            fd = _os.open(str(lockfile), _os.O_RDONLY | nofollow)
+            try:
+                with _os.fdopen(fd, "r", encoding="utf-8") as fh:
+                    body = fh.read()
+            except Exception:
+                _os.close(fd)
+                raise
+        else:  # pragma: no cover (Windows path)
+            if lockfile.is_symlink():
+                return ".docs_reconciled is a symlink — refusing to read for safety"
+            body = lockfile.read_text(encoding="utf-8")
+    except FileNotFoundError:
+        return (
+            f".docs_reconciled lockfile missing — Stage 6 (Documentation) was not "
+            f"completed for active sprint {sprint_id}. Run "
+            "'python validators/validate_doc_freshness.py .' before deploy."
+        )
+    except OSError as exc:
+        # ELOOP (40 on Linux, 62 on macOS) means the path is a symlink and
+        # O_NOFOLLOW refused to follow it. Catch by errno name not number.
+        import errno
+        if getattr(exc, "errno", None) == errno.ELOOP:
+            return ".docs_reconciled is a symlink — refusing to read for safety"
+        return f".docs_reconciled is unreadable: {exc}"
+    try:
+        payload = json.loads(body)
+    except json.JSONDecodeError as exc:
+        return f".docs_reconciled is malformed JSON: {exc}"
+    if not isinstance(payload, dict):
+        return ".docs_reconciled JSON root is not an object"
+    if payload.get("schema_version") != 1:
+        return (
+            f".docs_reconciled schema_version = {payload.get('schema_version')!r}, "
+            "expected 1"
+        )
+    locked_sprint = payload.get("sprint_id")
+    if locked_sprint != sprint_id:
+        return (
+            f".docs_reconciled is stale: lockfile sprint_id={locked_sprint!r} "
+            f"does not match active sprint {sprint_id!r}. Re-run "
+            "'python validators/validate_doc_freshness.py .' after Stage 6 reconciliation."
+        )
+    return None  # Gate passed.
+
+
+# ---------------------------------------------------------------------------
 # Validator discovery
 # ---------------------------------------------------------------------------
 
@@ -245,12 +336,23 @@ def action_push(
     message: str,
 ) -> None:
     """Validate then git commit+push. Exits 0/1/2/3."""
-    # --- Lockfile check (advisory warning, never hard-fails) ---
+    # --- Pre-impl lockfile check (advisory warning, never hard-fails) ---
     skip_set = {s.strip() for s in skip_validators.split(",") if s.strip()}
     if "validate_sprint" not in skip_set:
         lockfile_warning = _check_pre_impl_lockfile(project_root)
         if lockfile_warning:
             print(f"WARNING: {lockfile_warning}", file=sys.stderr)
+
+    # --- Docs-reconciled lockfile check (HARD GATE per Rule 16, Stage 6→7) ---
+    docs_block = _check_docs_reconciled_lockfile(project_root)
+    if docs_block is not None:
+        output = {
+            "status": "blocked",
+            "validators_passed": False,
+            "error": f"Deployment blocked at Stage 7 by Rule 16: {docs_block}",
+        }
+        print(json.dumps(output))
+        sys.exit(1)
 
     # --- Validation phase ---
     try:

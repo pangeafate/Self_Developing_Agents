@@ -42,6 +42,23 @@ EXPECTED_ALL_VALIDATORS = [
 EXPECTED_BOOTSTRAP_VALIDATORS = ["validate_structure", "validate_workspace"]
 
 
+def test_all_validators_constant_matches_expected():
+    """Cross-check that EXPECTED_ALL_VALIDATORS matches the production
+    `ALL_VALIDATORS` constant in run_all.py. Without this assertion, a
+    silent removal of a validator from ALL_VALIDATORS would not be
+    caught by any other test in this module — every other test injects
+    fake scripts via `_VALIDATOR_DIR_OVERRIDE` independently of the list."""
+    import importlib.util
+    spec = importlib.util.spec_from_file_location("run_all", ORCHESTRATOR)
+    mod = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(mod)
+    assert mod.ALL_VALIDATORS == EXPECTED_ALL_VALIDATORS, (
+        f"run_all.ALL_VALIDATORS drifted from test expectation.\n"
+        f"Production: {mod.ALL_VALIDATORS}\nExpected:   {EXPECTED_ALL_VALIDATORS}"
+    )
+    assert mod.BOOTSTRAP_VALIDATORS == EXPECTED_BOOTSTRAP_VALIDATORS
+
+
 def run_orchestrator(
     project_root: Path, *extra_args: str, env: dict | None = None
 ) -> subprocess.CompletedProcess:

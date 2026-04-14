@@ -84,8 +84,8 @@ Every feature the Coding Agent builds follows this exact sequence. Python valida
 | 3. Plan Review | 2+ review iterations by isolated sub-agents | validate_sprint.py |
 | 4. Implementation | TDD: write failing test, then code, then refactor | validate_tdd.py |
 | 5. Post-Impl Review | 2-5 gap analysis iterations (reviewers never see the plan) | validate_sprint.py |
-| 6. Deployment | Deploy built skill to Main Agent's workspace | deploy-to-agent.py |
-| 7. Documentation | Update progress, roadmap, features, delivery report | validate_rdd.py |
+| 6. Documentation | Reconcile meta-docs, bump `last-reconciled`, write `.docs_reconciled` lockfile | validate_doc_reality.py + validate_doc_freshness.py |
+| 7. Deployment | Deploy built skill to Main Agent's workspace (gated on `.docs_reconciled`) | deploy.py + deploy-to-agent.py |
 
 ## Three-Tier Architecture
 
