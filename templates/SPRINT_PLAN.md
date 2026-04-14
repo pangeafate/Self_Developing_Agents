@@ -1,7 +1,19 @@
-<!-- Template: fill in sections below. Remove this comment when populated. -->
-<!-- Note: Sprint plans do NOT carry frontmatter. They live under `workspace/sprints/`
-     which is excluded from validate_doc_reality.py's frontmatter manifest (Stage C).
-     Sprint plans are transient implementation artifacts, not meta-docs. -->
+---
+sprint_id: SP_XXX
+features: []
+user_stories: []
+schema_touched: false
+structure_touched: false
+status: Planning
+---
+<!-- Template: fill in the frontmatter (sprint_id, features, user_stories,
+     schema_touched, structure_touched, status) and the sections below.
+     Replace values in the frontmatter when you copy this template.
+
+     Sprint plans carry frontmatter for validate_doc_freshness.py Stage F-1.
+     workspace/sprints/ is EXCLUDED from validate_doc_reality.py Stage C's
+     frontmatter manifest because sprint-plan `status` uses a different enum
+     (Planning | In Progress | Complete | Abandoned) than meta-docs. -->
 
 # SP_XXX: [Sprint Name]
 
@@ -95,7 +107,7 @@ Following GL-TDD.md:
 
 ### Doc Reconciliation Checklist
 
-Complete at Stage 7 (Documentation). Tick each meta-doc whose subject matter this sprint touched.
+Complete at Stage 6 (Documentation). Tick each meta-doc whose subject matter this sprint touched.
 
 - [ ] `FEATURE_LIST.md` — feature statuses, sprint numbers, implementation paths
 - [ ] `PROJECT_ROADMAP.md` — milestone status for touched phases

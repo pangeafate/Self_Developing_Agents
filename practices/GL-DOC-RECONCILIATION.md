@@ -94,7 +94,7 @@ Guideline: any `TBD` worth keeping in a doc is worth tagging. Untagged `TBD` mar
 
 ## Sprint-End Reconciliation Checklist
 
-Every sprint's **Stage 7 (Documentation)** must walk this checklist. Each entry maps to a meta-doc; tick the ones the sprint's deltas touched.
+Every sprint's **Stage 6 (Documentation)** must walk this checklist. Each entry maps to a meta-doc; tick the ones the sprint's deltas touched.
 
 - [ ] `FEATURE_LIST.md` — feature statuses, sprint numbers, implementation paths
 - [ ] `PROJECT_ROADMAP.md` — milestone status for touched phases
@@ -104,8 +104,22 @@ Every sprint's **Stage 7 (Documentation)** must walk this checklist. Each entry 
 - [ ] `USER_STORIES.md` — if acceptance criteria were satisfied
 - [ ] `last-reconciled` bumped on each touched meta-doc
 - [ ] `python validators/validate_doc_reality.py <project_root>` returns 0
+- [ ] `python validators/validate_doc_freshness.py <project_root>` returns 0 (writes `.docs_reconciled` lockfile on success)
 
-A failure of the final step blocks Stage 6 (Deployment) — see Rule 16 in `AGENT_INSTRUCTIONS.md`.
+A failure of the final step blocks Stage 7 (Deployment) — see Rule 16 in `AGENT_INSTRUCTIONS.md`.
+
+## Migrating an Existing Project
+
+A project that predates `validate_doc_freshness.py` pulls the new validator on upgrade. To avoid breaking its existing sprints:
+
+- By default, `doc_freshness.enabled` is `false` (or absent) — the validator advisory-passes on every run.
+- Opt in by adding to `.validators.yml`:
+  ```yaml
+  doc_freshness:
+    enabled: true
+  ```
+- Before enabling: ensure every sprint plan under `workspace/sprints/` has a frontmatter block with `sprint_id`, `features`, `user_stories`, `schema_touched`, `structure_touched`, `status`. Backfilling historical sprints is optional; only the currently-active sprint's plan is examined by Stage F-1.
+- First run after opt-in: expect findings. Triage, fix, bump `last-reconciled` dates, re-run. `.docs_reconciled` is written on the first fully clean run.
 
 ## Generated-Doc Marker (Forward-Compatible)
 

@@ -1,10 +1,27 @@
 # Validator configuration for the Self-Developing Agents Framework repo itself.
 #
 # Shared config file schema:
-#   - Top-level key `doc_reality:`   — consumed by validators/validate_doc_reality.py
+#   - Top-level key `doc_reality:`    — consumed by validators/validate_doc_reality.py
+#   - Top-level key `doc_freshness:`  — consumed by validators/validate_doc_freshness.py
 #   - Top-level key `required_files:` (list) — consumed by validators/validate_structure.py
 #   - Top-level key `bootstrap_files:` (list) — consumed by validators/validate_workspace.py
 # Each consumer ignores keys it does not recognize.
+
+doc_freshness:
+  enabled: true
+  source_roots: [validators, skills]
+  meta_docs:
+    - PROGRESS.md
+    - FEATURE_LIST.md
+    - PROJECT_ROADMAP.md
+    - ARCHITECTURE.md
+    - DATA_SCHEMA.md
+    - CODEBASE_STRUCTURE.md
+    - USER_STORIES.md
+  exempt_paths:
+    - validators/test_*.py
+    - validators/test_fixtures/**
+    - skills/**/test_*.py
 
 doc_reality:
   exclude_dirs: []

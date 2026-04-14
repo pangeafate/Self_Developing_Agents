@@ -47,6 +47,20 @@ Docker containers are appropriate for infrastructure services (databases, messag
 
 **Exception**: If the project's architecture specifically requires containerized application deployment (e.g., Kubernetes-based systems), document the rationale in ARCHITECTURE.md and adjust these guidelines accordingly.
 
+## Pre-Deploy Lockfile Requirement
+
+Stage 7 (Deployment) MUST NOT begin until Stage 6 (Documentation) has produced a valid `.docs_reconciled` lockfile at the project root. Verify:
+
+1. The file `.docs_reconciled` exists at `<project_root>/.docs_reconciled`.
+2. It parses as JSON with `schema_version: 1`.
+3. Its `sprint_id` equals the active sprint ID from `PROGRESS.md`.
+
+Any check failing → refuse deploy; return to Stage 6.
+
+The lockfile is written by `validators/validate_doc_freshness.py` on a clean run. Its presence is the machine-readable receipt that documentation was reconciled against the sprint's git diff. Do not hand-write the lockfile; if validation won't produce it, fix the validator findings first.
+
+The lockfile is gitignored (local build artifact, not committed state). Each sprint overwrites the previous sprint's lockfile.
+
 ## Bootstrap File Size Limits
 
 Most agent platforms load certain files at session start: identity files, instruction documents, workspace configuration. These files are loaded into the agent's context window on every session, consuming tokens before any work begins.

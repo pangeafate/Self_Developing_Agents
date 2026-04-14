@@ -14,9 +14,11 @@ orchestration.
   plan-architect, researcher, and analyzer.
 - **Stage 4 (Implementation)**: Writes all production and test code, assisted
   by test-enforcer, researcher, and analyzer.
-- **Stage 6 (Deployment)**: Executes deployment procedures.
-- **Stage 7 (Documentation)**: Updates project documentation, progress
-  tracking, and roadmap files.
+- **Stage 6 (Documentation)**: Updates project documentation, progress
+  tracking, and roadmap files; bumps `last-reconciled`; runs
+  `validate_doc_freshness.py` to produce `.docs_reconciled` lockfile.
+- **Stage 7 (Deployment)**: Executes deployment procedures (gated by
+  `.docs_reconciled`).
 
 ## Behavioral Rules
 

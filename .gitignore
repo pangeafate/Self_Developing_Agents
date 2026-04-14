@@ -8,3 +8,7 @@ build/
 .env
 *.swp
 .DS_Store
+
+# Validator lockfiles (local build artifacts)
+.docs_reconciled
+.pre_impl_passed

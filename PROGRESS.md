@@ -1,6 +1,6 @@
 ---
 status: living
-last-reconciled: 2026-04-13
+last-reconciled: 2026-04-14
 authoritative-for: [active-sprint, sprint-history]
 ---
 
@@ -10,11 +10,19 @@ authoritative-for: [active-sprint, sprint-history]
 
 ## Active Sprint
 
-_None. Most recent sprint completed: SP_001_Doc_Reality_Discipline (2026-04-13)._
+_None. Most recent sprint completed: SP_002_Doc_Freshness_Gate (2026-04-14)._
 
 <!-- When a new sprint opens, add a Current-marker line back here for validate_sprint.py detection. -->
 
 ## Sprint History
+
+### SP_002: Doc Freshness Gate
+
+- **Status**: Complete
+- **Date**: 2026-04-14
+- **Summary**: Added diff-aware `validate_doc_freshness.py` (4 stages: sprint-plan frontmatter, claims match diff, proportionality, `last-reconciled` bumped); swapped Stage 6 (now Documentation) and Stage 7 (now Deployment); introduced sprint-plan frontmatter convention; `.docs_reconciled` lockfile with `schema_version: 1`; created `pytest.ini` with `integration`/`acceptance` markers. Rule 16 rewritten for deploy-gate semantics.
+- **Tests added**: +48 new tests (33 doc_freshness unit + 10 doc_freshness integration + 5 existing-test updates for 7th validator)
+- **Key decisions**: Diff-base = parent of sprint-plan's introducing commit, empty-tree fallback for initial commits; three-dot diff (`base...HEAD`) to exclude merge-from-main noise; `doc_freshness.enabled: false` default for downstream safety; meta-doc classification at project root only (`templates/DATA_SCHEMA.md` does NOT count as DATA_SCHEMA.md); F-4 detects unchanged `last-reconciled` values to close the same-date loophole; `--skip-stage F1` runs downstream stages with synthetic empty claims rather than silently cascading. Helper duplication accepted for this sprint; shared-helper extraction under validators/ queued for SP_003.
 
 ### SP_001: Doc Reality Discipline
 

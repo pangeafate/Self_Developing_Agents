@@ -105,7 +105,31 @@ Use the **dev-critique** skill for gap analysis.
 
 Rotate reviewers across iterations: debugger, code-reviewer, architect-reviewer. Add security-auditor if touching auth/user-input.
 
-### Stage 6 — Deployment
+### Stage 6 — Documentation
+
+Use the **dev-sprint** skill, `update-docs` action to update PROGRESS.md with sprint completion.
+
+Also manually update every meta-doc whose subject matter this sprint touched:
+- FEATURE_LIST.md (feature statuses, sprint numbers, implementation paths)
+- PROJECT_ROADMAP.md (milestone status)
+- ARCHITECTURE.md (if system design changed)
+- DATA_SCHEMA.md (if database changed)
+- CODEBASE_STRUCTURE.md (if new files/directories created)
+- USER_STORIES.md (acceptance criteria)
+
+For every touched meta-doc, bump `last-reconciled` to today's ISO date.
+
+Run both doc validators:
+```bash
+python validators/validate_doc_reality.py .
+python validators/validate_doc_freshness.py .
+```
+
+`validate_doc_freshness.py` writes `.docs_reconciled` on success. If either validator fails, Stage 7 cannot proceed — fix the findings and re-run.
+
+### Stage 7 — Deployment, Delivery, and Notification
+
+Verify the `.docs_reconciled` lockfile exists at project root and names the current sprint. If missing, return to Stage 6.
 
 Read the task file's `**Target workspace:**` field to determine where to deploy. Then use the **dev-deploy** skill's `deploy-to-agent` action:
 
@@ -125,15 +149,6 @@ The `deploy-to-agent` action:
 If the task file has no `**Target workspace:**` field, deploy to your own `skills/` directory only and note in the delivery report that manual deployment is needed.
 
 Deployment is blocked if any validator fails. Fix failures before retrying.
-
-### Stage 7 — Documentation, Delivery, and Notification
-
-Use the **dev-sprint** skill, `update-docs` action to update PROGRESS.md with sprint completion.
-
-Also manually update:
-- ARCHITECTURE.md (if system design changed)
-- DATA_SCHEMA.md (if database changed)
-- CODEBASE_STRUCTURE.md (if new files/directories created)
 
 Write the delivery report to `delivery/TASK_XXX_DELIVERY.md` using this structure:
 

@@ -1,3 +1,16 @@
+---
+sprint_id: SP_001
+features: []
+user_stories: []
+schema_touched: false
+structure_touched: true
+status: Complete
+---
+<!-- Historical note: at SP_001 ship (2026-04-13), the framework's stage
+     numbering was Stage 6 = Deployment, Stage 7 = Documentation. SP_002
+     swapped that semantic to Stage 6 = Documentation, Stage 7 = Deployment.
+     References below to "Stage 6/7" reflect the pre-SP_002 ordering. -->
+
 # SP_001: Documentation Reality Discipline
 
 ## Sprint Goal

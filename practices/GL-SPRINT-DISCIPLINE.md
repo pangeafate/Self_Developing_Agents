@@ -235,11 +235,12 @@ Each completed sprint gets a condensed entry:
 4. VALIDATE (GL-SELF-CRITIQUE.md Stage 5)
    Gap analysis iterations -> Fix issues -> Re-run tests
 
-5. DEPLOY (GL-DEPLOYMENT.md)
-   Push to version control -> CI/CD auto-deploy -> Verify deployment
-
-6. DOCUMENT
+5. DOCUMENT (GL-DOC-RECONCILIATION.md)
    Update PROGRESS.md -> ROADMAP -> FEATURES -> USER_STORIES -> ARCHITECTURE
+   Bump last-reconciled -> run validate_doc_freshness.py -> write .docs_reconciled
+
+6. DEPLOY (GL-DEPLOYMENT.md)
+   Verify .docs_reconciled lockfile -> Push to version control -> CI/CD auto-deploy -> Verify deployment
 ```
 
 ---

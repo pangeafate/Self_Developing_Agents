@@ -6,7 +6,7 @@
 
 **Give your AI agent a developer.** This framework deploys a headless Coding Agent alongside your existing agent. When your agent lacks a capability, the Coding Agent builds it — writes the code, tests it, reviews it with isolated sub-agents, and deploys it directly to your agent's workspace.
 
-Distilled from 1000+ sprints of real-world agent-driven development. 313 tests. Battle-tested.
+Distilled from 1000+ sprints of real-world agent-driven development. 360+ tests. Battle-tested.
 
 ## What Happens When You Deploy This
 
@@ -111,7 +111,7 @@ The Main Agent and Coding Agent communicate via file-based task dispatch. The Co
 ```
 ├── install.sh                One-command installer (works on any platform)
 ├── BOOTSTRAP.md              Day 1 setup (manual path)
-├── AGENT_INSTRUCTIONS.md     16 operating rules
+├── AGENT_INSTRUCTIONS.md     16 operating rules (Stage 6 = Documentation, Stage 7 = Deployment)
 │
 ├── architecture/             System design docs
 │   ├── SYSTEM_DESIGN.md      3-tier architecture + task dispatch
@@ -136,7 +136,8 @@ The Main Agent and Coding Agent communicate via file-based task dispatch. The Co
 │
 ├── validators/               Python enforcement
 │   ├── validate_structure, validate_workspace, validate_tdd, validate_rdd, validate_sprint
-│   └── validate_doc_reality (added SP_001 — dead paths, TBD-by decay, frontmatter, paired-file duplication)
+│   ├── validate_doc_reality (SP_001 — dead paths, TBD-by decay, frontmatter, paired-file duplication)
+│   └── validate_doc_freshness (SP_002 — diff-aware: claim-match, proportionality, last-reconciled bumped; writes .docs_reconciled lockfile)
 │
 ├── deploy/openclaw/          OpenClaw-specific extras
 │   ├── README.md             Detailed OpenClaw setup guide
@@ -208,7 +209,7 @@ All settings optional — sensible defaults built in.
 
 ## Documentation Reality Discipline (SP_001)
 
-The framework also enforces that meta-documentation stays aligned with shipped reality. Drift is a structural problem (aspirational docs frozen in time, copy-paste duplication, dead path references, stale `TBD` markers) — `validators/validate_doc_reality.py` is the structural fix.
+The framework enforces that meta-documentation stays aligned with shipped reality. Drift is a structural problem (aspirational docs frozen in time, copy-paste duplication, dead path references, stale `TBD` markers) — `validators/validate_doc_reality.py` is the structural fix.
 
 Four stages, each independently skippable:
 
@@ -219,21 +220,59 @@ Four stages, each independently skippable:
 | C — Frontmatter | Missing/malformed `status` and `last-reconciled` keys; explicitly rejects the `1970-01-01` template sentinel |
 | D — Duplication | Long identical runs between paired files (e.g., `AGENT_INSTRUCTIONS.md` ↔ `CLAUDE.md`); use `@inherits:` to mark intentional inheritance |
 
-Conventions are codified in [`practices/GL-DOC-RECONCILIATION.md`](practices/GL-DOC-RECONCILIATION.md). Rule 16 of `AGENT_INSTRUCTIONS.md` requires running this validator before deploy and completing a Doc Reconciliation Checklist at Stage 7.
+## Documentation Freshness Gate (SP_002)
+
+`validate_doc_reality.py` catches drift in docs that already exist. It does NOT catch the far more common failure — a sprint that shipped code and never touched the docs at all. `validators/validate_doc_freshness.py` closes that gap with four diff-aware stages:
+
+| Stage | Catches |
+|---|---|
+| F-1 — Frontmatter | Sprint plan is missing the required frontmatter (`sprint_id`, `features`, `user_stories`, `schema_touched`, `structure_touched`, `status`). Gated by opt-in `doc_freshness.enabled: true` |
+| F-2 — Claims ↔ diff | `features: [F-003]` declared but `FEATURE_LIST.md` never touched, OR `DATA_SCHEMA.md` touched while `schema_touched: false` (inverse-check against silent drift) |
+| F-3 — Proportionality | Source code changed but no root meta-doc was touched in the diff |
+| F-4 — `last-reconciled` bumped | Every touched meta-doc's `last-reconciled` line was modified to a date ≥ sprint start (closes the "bump-to-arbitrary-value" loophole) |
+
+On a full pass the validator writes `.docs_reconciled` (JSON lockfile with `schema_version: 1`, `sprint_id`, `passed_at`) — the machine-readable receipt Stage 7 (Deployment) gates on.
+
+**Stage ordering: Stage 6 = Documentation, Stage 7 = Deployment.** You do not deploy what you have not documented.
+
+Conventions codified in [`practices/GL-DOC-RECONCILIATION.md`](practices/GL-DOC-RECONCILIATION.md) and [`practices/GL-DEPLOYMENT.md`](practices/GL-DEPLOYMENT.md). Rule 16 of `AGENT_INSTRUCTIONS.md` requires both doc validators to pass at Stage 6 before deploying at Stage 7.
+
+### Opting in (existing projects)
+
+By default `doc_freshness.enabled` is `false` so upgrading the framework doesn't break existing projects. To opt in, add to `.validators.yml`:
+
+```yaml
+doc_freshness:
+  enabled: true
+  source_roots: [src, skills]   # where production code lives
+  meta_docs: [PROGRESS.md, FEATURE_LIST.md, PROJECT_ROADMAP.md, ARCHITECTURE.md, DATA_SCHEMA.md, CODEBASE_STRUCTURE.md, USER_STORIES.md]
+  exempt_paths: ["**/test_*.py"]
+```
+
+Then backfill sprint-plan frontmatter on the current active sprint. See [`practices/GL-DOC-RECONCILIATION.md#migrating-an-existing-project`](practices/GL-DOC-RECONCILIATION.md).
 
 ## Numbers
 
-- **77 files** in the framework
-- **313 tests** passing
-- **9 practice guides** (TDD, RDD, error handling, sprint discipline, self-critique, deployment, context management, template enforcement, **doc reconciliation**)
+- **82 files** in the framework
+- **360+ tests** passing
+- **9 practice guides** (TDD, RDD, error handling, sprint discipline, self-critique, deployment, context management, template enforcement, doc reconciliation)
 - **11 sub-agent roles** for research and quality review
-- **6 validators** enforcing the 7-stage cycle (structure, workspace, TDD, RDD, sprint, **doc-reality**)
+- **7 validators** enforcing the 7-stage cycle (structure, workspace, TDD, RDD, sprint, doc-reality, **doc-freshness**)
 - **4 executable skills** automating the development lifecycle
 - **1 platform-agnostic installer** (one command, works on any agent with read/write/shell)
 
 ## Recent Sprints
 
-- **SP_001 (2026-04-13) — Doc Reality Discipline.** Added `validate_doc_reality.py` (4 stages), `GL-DOC-RECONCILIATION.md`, Rule 16, frontmatter on 7 meta-doc templates, Doc Reconciliation Checklist in `SPRINT_PLAN.md`, seeded `.validators.yml`. The framework repo now passes its own new validator with exit 0. See [`workspace/sprints/SP_001_Doc_Reality_Discipline.md`](workspace/sprints/SP_001_Doc_Reality_Discipline.md).
+- **SP_002 (2026-04-14) — Doc Freshness Gate.** Added diff-aware `validate_doc_freshness.py` (4 stages); swapped Stage 6 (now Documentation) ↔ Stage 7 (now Deployment); sprint-plan frontmatter convention; `.docs_reconciled` lockfile with `schema_version: 1`; `pytest.ini` with `integration`/`acceptance` markers; Rule 16 rewritten for deploy-gate semantics. 48 new tests. See [`workspace/sprints/SP_002_Doc_Freshness_Gate.md`](workspace/sprints/SP_002_Doc_Freshness_Gate.md).
+- **SP_001 (2026-04-13) — Doc Reality Discipline.** Added `validate_doc_reality.py` (4 stages), `GL-DOC-RECONCILIATION.md`, Rule 16, frontmatter on 7 meta-doc templates, Doc Reconciliation Checklist in `SPRINT_PLAN.md`, seeded `.validators.yml`. See [`workspace/sprints/SP_001_Doc_Reality_Discipline.md`](workspace/sprints/SP_001_Doc_Reality_Discipline.md).
+
+## Upgrading from pre-SP_002
+
+Projects that adopted the framework before SP_002 had `Stage 6 = Deployment, Stage 7 = Documentation`. SP_002 swaps these semantics to `Stage 6 = Documentation, Stage 7 = Deployment`. To upgrade:
+
+1. Re-run `install.sh` to refresh `skills/dev-bootstrap/templates/AGENTS.md` and skill SKILL.md files.
+2. Add `doc_freshness.enabled: true` to `.validators.yml` when ready (default is `false` so the validator is inert until opted in).
+3. Backfill sprint-plan frontmatter on the active sprint.
 
 ## License
 

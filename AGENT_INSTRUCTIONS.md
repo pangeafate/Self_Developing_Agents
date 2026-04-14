@@ -4,9 +4,9 @@ This is the operating rulebook for any agent using the Self-Developing Agents Fr
 
 These rules are project-agnostic. Project-specific configuration (database details, platform credentials, deployment targets) belongs in your project's own instruction file, not here.
 
-**Development cycle reference**: All work follows the 7-stage self-improvement cycle defined in `architecture/SYSTEM_DESIGN.md`: (1) Task Recognition, (2) Sprint Planning, (3) Plan Review, (4) Implementation, (5) Post-Implementation Review, (6) Deployment, (7) Documentation. No stage may be skipped. Validators in `validators/` enforce this.
+**Development cycle reference**: All work follows the 7-stage self-improvement cycle defined in `architecture/SYSTEM_DESIGN.md`: (1) Task Recognition, (2) Sprint Planning, (3) Plan Review, (4) Implementation, (5) Post-Implementation Review, (6) Documentation, (7) Deployment. No stage may be skipped. Validators in `validators/` enforce this. Documentation precedes deployment: you do not deploy what you have not documented.
 
-**Cross-cutting practices**: `practices/GL-CONTEXT-MANAGEMENT.md` applies at every stage transition -- re-read the sprint plan, persist intermediate state, provide full context to sub-agents. `practices/GL-TEMPLATE-ENFORCEMENT.md` applies whenever output is generated -- read the template before producing output, never freestyle. `practices/GL-DOC-RECONCILIATION.md` applies at Stage 7 -- reconcile meta-docs with shipped reality before the sprint closes.
+**Cross-cutting practices**: `practices/GL-CONTEXT-MANAGEMENT.md` applies at every stage transition -- re-read the sprint plan, persist intermediate state, provide full context to sub-agents. `practices/GL-TEMPLATE-ENFORCEMENT.md` applies whenever output is generated -- read the template before producing output, never freestyle. `practices/GL-DOC-RECONCILIATION.md` applies at Stage 6 -- reconcile meta-docs with shipped reality before deploying.
 
 ---
 
@@ -68,7 +68,7 @@ After implementation, update all affected documentation:
 - `ARCHITECTURE.md` -- if system design changed.
 - `DATA_SCHEMA.md` -- if database schema changed.
 
-This is Stage 7 of the development cycle. It is not optional. See also Rule 16 for the reconciliation checklist and the `last-reconciled` frontmatter contract.
+This is Stage 6 of the development cycle. It is not optional. See also Rule 16 for the reconciliation checklist, `last-reconciled` frontmatter contract, and the `.docs_reconciled` lockfile required by Stage 7.
 
 ### 8. Sprint Plan Self-Critique
 
@@ -82,13 +82,13 @@ After writing and saving a sprint plan, run a minimum of 2 parallel review itera
 
 ### 9. Post-Sprint Gap Analysis
 
-After each sprint's tests pass and BEFORE deployment (Stage 6), run a minimum of 2 sequential gap analysis iterations using dedicated sub-agents (part of Stage 5). Continue up to 5 iterations:
+After each sprint's tests pass and BEFORE documentation (Stage 6) and deployment (Stage 7), run a minimum of 2 sequential gap analysis iterations using dedicated sub-agents (part of Stage 5). Continue up to 5 iterations:
 
 - Each iteration reviews all new files for: logical gaps, missing edge cases, inconsistencies between modules, broken cross-references, untested paths, import errors, schema-to-model sync, error path coverage, and cross-module contract consistency.
 - Fix any bugs found and re-run tests before the next iteration.
 - Stop early (fewer than 5 iterations) ONLY if an iteration finds zero issues.
 - Minimum 2 iterations even if the first comes back clean.
-- **Hard stop**: If iteration 5 still has CRITICAL or HIGH issues, do NOT proceed to Stage 6 (Deployment). Block deployment and report unresolved issues to the human for guidance.
+- **Hard stop**: If iteration 5 still has CRITICAL or HIGH issues, do NOT proceed to Stage 6 (Documentation) or Stage 7 (Deployment). Block the sprint and report unresolved issues to the human for guidance.
 
 See `practices/GL-SELF-CRITIQUE.md` for the full review protocol and checklists.
 
@@ -102,7 +102,7 @@ See `practices/GL-CONTEXT-MANAGEMENT.md` for context restoration patterns and su
 
 Deploy via CI/CD (git push). Direct server access (SSH, remote shell) is emergency-only, used when CI/CD itself is broken. Every deployment must be version-controlled and traceable.
 
-Post-deploy: verify the deployment succeeded. If deployment fails, do NOT proceed to Stage 7. Report the failure to the human.
+Stage 7 MUST NOT begin until Stage 6's `.docs_reconciled` lockfile exists at project root and names the current sprint. Post-deploy: verify the deployment succeeded. If deployment fails, roll back and report to the human.
 
 See `practices/GL-DEPLOYMENT.md` for the full deployment protocol and security boundaries.
 
@@ -136,10 +136,17 @@ The agent may make certain changes autonomously without a full sprint cycle:
 
 **Override**: When told to present a proposal first, do that instead of making the change directly.
 
-### 16. Documentation Reconciliation
+### 16. Documentation Reconciliation and Deploy Gate
 
-Before Stage 6 (Deployment), run `validators/validate_doc_reality.py <project_root>`; a failure blocks deployment. At Stage 7 (Documentation), complete the reconciliation checklist: for every meta-doc whose subject-matter was touched by this sprint, update content and bump `last-reconciled`.
+Stage 6 of the cycle is Documentation; Stage 7 is Deployment. You do not deploy what you have not documented.
 
-Rule 15's autonomous-update clause remains in effect for docs-only changes: such changes must still bump `last-reconciled` and may be validated post-hoc, but they do not require the full Stage-7 reconciliation pass.
+Before Stage 7 (Deployment) begins:
+1. Complete the reconciliation checklist in the sprint plan — update every meta-doc whose subject matter was touched by this sprint, bump each touched doc's `last-reconciled` to today's ISO date.
+2. Run `validators/validate_doc_reality.py <project_root>`.
+3. Run `validators/validate_doc_freshness.py <project_root>` (lockfile writes by default on success; pass `--no-lockfile` only for dry-runs).
 
-See `practices/GL-DOC-RECONCILIATION.md` for the frontmatter convention, the single-source rule and the `@inherits:` directive, vision-doc quarantine, and the TBD-by decay rule.
+If either validator fails, Stage 7 does not proceed. The `.docs_reconciled` lockfile (written by validate_doc_freshness.py) is the machine-readable receipt Stage 7 checks for.
+
+Rule 15's autonomous-update clause remains in effect for docs-only changes: such changes must still bump `last-reconciled` and may be validated post-hoc, but they do not require the full checklist or lockfile.
+
+See `practices/GL-DOC-RECONCILIATION.md` for the frontmatter convention, single-source rule, `@inherits:` directive, vision-doc quarantine, and TBD-by decay rule. See `practices/GL-DEPLOYMENT.md` for deploy-gate semantics.

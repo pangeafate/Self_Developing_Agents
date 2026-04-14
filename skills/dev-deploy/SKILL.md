@@ -10,7 +10,7 @@ Run all validators before deployment, push to version control, poll for incoming
 
 ## When to Use
 
-- **Stage 6 (Deployment)**: After post-implementation review passes — validate and deploy
+- **Stage 7 (Deployment)**: After Stage 6 Documentation completes and `.docs_reconciled` lockfile exists — validate and deploy
 - **Anytime**: Run validators without pushing (`--action validate`) as a health check
 - **Heartbeat**: Poll for new tasks from the Main Agent (`poll-tasks.py`)
 - **Cross-agent deployment**: Copy built skills to the Main Agent's workspace (`deploy-to-agent.py`)

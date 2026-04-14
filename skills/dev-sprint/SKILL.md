@@ -11,7 +11,7 @@ Create sprint plan files from requirements and update tracking documentation aft
 ## When to Use
 
 - **Stage 2 (Sprint Planning)**: Create a new sprint plan skeleton
-- **Stage 7 (Documentation)**: Update PROGRESS.md, PROJECT_ROADMAP.md, FEATURE_LIST.md after completing a sprint
+- **Stage 6 (Documentation)**: Update PROGRESS.md, PROJECT_ROADMAP.md, FEATURE_LIST.md after completing a sprint
 
 ## Available Scripts
 

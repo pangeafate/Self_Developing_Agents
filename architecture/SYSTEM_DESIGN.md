@@ -50,8 +50,8 @@ The Coding Agent owns the entire engineering discipline. It operates in a dedica
 - **Stage 3 -- Plan Review Orchestration**: Run parallel self-critique iterations via sub-agents, solicit domain review from Main Agent, consolidate findings, update the plan
 - **Stage 4 -- Implementation**: Write code following TDD (test first, then implementation), following all GL-*.md engineering guidelines
 - **Stage 5 -- Post-Implementation Review Orchestration**: Spawn context-isolated quality agents to review the delivered code (see Tier 3). Consolidate their findings and fix issues. Run iterative gap analysis rounds via sub-agents until a clean iteration (zero issues found). The Coding Agent itself NEVER validates its own code.
-- **Stage 6 -- Deployment**: Push via CI/CD, verify deployment succeeded, handle failures
-- **Stage 7 -- Documentation**: Update all affected docs (PROGRESS.md, PROJECT_ROADMAP.md, FEATURE_LIST.md, USER_STORIES.md, etc.)
+- **Stage 6 -- Documentation**: Update all affected docs (PROGRESS.md, PROJECT_ROADMAP.md, FEATURE_LIST.md, USER_STORIES.md, etc.); bump `last-reconciled`; run `validators/validate_doc_freshness.py` which writes `.docs_reconciled` lockfile on success. See Rule 16.
+- **Stage 7 -- Deployment**: Push via CI/CD, verify deployment succeeded, handle failures. MUST NOT begin until `.docs_reconciled` lockfile exists and names the current sprint.
 
 ### Hard Boundaries -- What the Coding Agent Must NEVER Do
 
@@ -154,7 +154,7 @@ Human -> Main Agent: "I need the system to handle recurring tasks"
    - What functionality is missing
    - Acceptance criteria
    - Domain context (relevant entities, business rules)
-3. Coding Agent executes the full development cycle (Stages 2-7: planning, review, implementation, post-implementation review, deployment, documentation)
+3. Coding Agent executes the full development cycle (Stages 2-7: planning, review, implementation, post-implementation review, documentation, deployment)
 4. Coding Agent writes results to a delivery file
 5. Main Agent reads the delivery file and verifies
 6. Main Agent reports to the human
@@ -257,8 +257,8 @@ Task metadata uses **bold labels** (`**Status:** NEW`) rather than headings (`##
 | 3 | Coding Agent + Main Agent | Plan Review: Coding Agent runs self-critique sub-agents, Main Agent reviews for domain correctness |
 | 4 | Coding Agent | Implementation: TDD (tests first, then code) |
 | 5 | Coding Agent (via Quality Agents) | Post-Implementation Review: context-isolated reviewers + iterative gap analysis until clean |
-| 6 | Coding Agent | Deployment: push via CI/CD, verify, handle failures |
-| 7 | Coding Agent | Documentation: update PROGRESS.md, roadmap, features, user stories |
+| 6 | Coding Agent | Documentation: update PROGRESS.md, roadmap, features, user stories; bump `last-reconciled`; write `.docs_reconciled` lockfile |
+| 7 | Coding Agent | Deployment: push via CI/CD, verify, handle failures (requires `.docs_reconciled` from Stage 6) |
 
 ---
 

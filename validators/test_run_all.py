@@ -2,8 +2,9 @@
 Tests for run_all.py orchestrator
 
 Orchestrator contract:
-- Runs all 6 validators in sequence: validate_structure, validate_workspace,
-  validate_tdd, validate_rdd, validate_sprint, validate_doc_reality
+- Runs all 7 validators in sequence: validate_structure, validate_workspace,
+  validate_tdd, validate_rdd, validate_sprint, validate_doc_reality,
+  validate_doc_freshness
 - Exits 0 only if ALL validators pass
 - Exits 1 if any validator fails
 - --bootstrap flag runs only validate_structure and validate_workspace (in that order)
@@ -36,6 +37,7 @@ EXPECTED_ALL_VALIDATORS = [
     "validate_rdd",
     "validate_sprint",
     "validate_doc_reality",
+    "validate_doc_freshness",
 ]
 EXPECTED_BOOTSTRAP_VALIDATORS = ["validate_structure", "validate_workspace"]
 
@@ -101,7 +103,7 @@ def setup_project(tmp_path: Path) -> Path:
 
 
 def test_all_pass_exits_zero(tmp_path: Path) -> None:
-    """When all 6 validators return 0, the orchestrator exits 0."""
+    """When all 7 validators return 0, the orchestrator exits 0."""
     project = setup_project(tmp_path)
     _run_all_pass_with_fake_scripts(tmp_path, project)
 
@@ -135,7 +137,7 @@ def test_any_fail_exits_one(tmp_path: Path) -> None:
     fake_dir.mkdir()
 
     # All validators except validate_sprint pass; validate_doc_reality also passes
-    for name in EXPECTED_ALL_VALIDATORS[:4] + ["validate_doc_reality"]:
+    for name in EXPECTED_ALL_VALIDATORS[:4] + ["validate_doc_reality", "validate_doc_freshness"]:
         (fake_dir / f"{name}.py").write_text("import sys; sys.exit(0)\n")
 
     # validate_sprint fails
@@ -231,7 +233,7 @@ def test_skip_flag_excludes_validator(tmp_path: Path) -> None:
     fake_dir.mkdir()
 
     # All non-skipped validators pass (structure, workspace, tdd, rdd, doc_reality)
-    for name in EXPECTED_ALL_VALIDATORS[:4] + ["validate_doc_reality"]:
+    for name in EXPECTED_ALL_VALIDATORS[:4] + ["validate_doc_reality", "validate_doc_freshness"]:
         (fake_dir / f"{name}.py").write_text("import sys; sys.exit(0)\n")
 
     sprint_flag = tmp_path / "validate_sprint.ran"
@@ -275,7 +277,7 @@ def test_skip_multiple_validators(tmp_path: Path) -> None:
     result = subprocess.run(
         [
             sys.executable, str(ORCHESTRATOR), str(project),
-            "--skip", "validate_tdd,validate_rdd,validate_sprint,validate_doc_reality",
+            "--skip", "validate_tdd,validate_rdd,validate_sprint,validate_doc_reality,validate_doc_freshness",
         ],
         capture_output=True,
         text=True,
@@ -364,7 +366,7 @@ def test_summary_output_format(tmp_path: Path) -> None:
 
     combined = result.stdout + result.stderr
     # Summary must mention each validator by some form of its name
-    for name in ["structure", "workspace", "tdd", "rdd", "sprint", "doc_reality"]:
+    for name in ["structure", "workspace", "tdd", "rdd", "sprint", "doc_reality", "doc_freshness"]:
         assert name in combined.lower(), (
             f"Expected '{name}' in summary output, got:\n{combined}"
         )
@@ -379,7 +381,7 @@ def test_summary_output_format(tmp_path: Path) -> None:
 
 
 def test_summary_shows_all_validators_ran(tmp_path: Path) -> None:
-    """All 6 validator names appear in the output summary."""
+    """All 7 validator names appear in the output summary."""
     project = setup_project(tmp_path)
     fake_dir = tmp_path / "fake_validators"
     fake_dir.mkdir()
@@ -395,7 +397,7 @@ def test_summary_shows_all_validators_ran(tmp_path: Path) -> None:
     )
 
     combined = result.stdout + result.stderr
-    for short_name in ["structure", "workspace", "tdd", "rdd", "sprint", "doc_reality"]:
+    for short_name in ["structure", "workspace", "tdd", "rdd", "sprint", "doc_reality", "doc_freshness"]:
         assert short_name in combined.lower(), (
             f"'{short_name}' not found in orchestrator output:\n{combined}"
         )
@@ -432,7 +434,7 @@ def test_missing_validator_script_exits_one(tmp_path: Path) -> None:
     fake_dir.mkdir()
 
     # Create every validator except validate_sprint — sprint is the one missing
-    for name in EXPECTED_ALL_VALIDATORS[:4] + ["validate_doc_reality"]:
+    for name in EXPECTED_ALL_VALIDATORS[:4] + ["validate_doc_reality", "validate_doc_freshness"]:
         (fake_dir / f"{name}.py").write_text("import sys; sys.exit(0)\n")
     # validate_sprint.py deliberately NOT created
 
@@ -465,7 +467,7 @@ def test_allow_no_sprint_env_forwarded(tmp_path: Path) -> None:
     fake_dir.mkdir()
 
     # All validators except validate_sprint always pass
-    for name in EXPECTED_ALL_VALIDATORS[:4] + ["validate_doc_reality"]:
+    for name in EXPECTED_ALL_VALIDATORS[:4] + ["validate_doc_reality", "validate_doc_freshness"]:
         (fake_dir / f"{name}.py").write_text("import sys; sys.exit(0)\n")
 
     # validate_sprint checks SDA_ALLOW_NO_SPRINT env var — use the real script
