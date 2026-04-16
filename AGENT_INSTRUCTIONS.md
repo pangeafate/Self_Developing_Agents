@@ -150,3 +150,21 @@ If either validator fails, Stage 7 does not proceed. The `.docs_reconciled` lock
 Rule 15's autonomous-update clause remains in effect for docs-only changes: such changes must still bump `last-reconciled` and may be validated post-hoc, but they do not require the full checklist or lockfile.
 
 See `practices/GL-DOC-RECONCILIATION.md` for the frontmatter convention, single-source rule, `@inherits:` directive, vision-doc quarantine, and TBD-by decay rule. See `practices/GL-DEPLOYMENT.md` for deploy-gate semantics.
+
+---
+
+## Quick Reference: Development Workflow
+
+```
+1. PLAN      Check roadmap -> Create SP_XXX in workspace/sprints/ -> Update PROGRESS.md
+2. CRITIQUE  2+ parallel reviews (architect-reviewer + code-reviewer, fresh agents) -> Fix CRITICAL/HIGH until the review doesn't surface any more CRITICAL/HIGH issues
+3. IMPLEMENT RED -> GREEN -> REFACTOR (per GL-TDD.md)
+4. VALIDATE  2-5 gap analysis iterations with fresh quality agents -> Fix issues until the review doesn't surface any more HIGH/CRITICAL issues
+5. VALIDATE  Run validators/run_all.py -> All must pass
+6. DOCUMENT  Update PROGRESS, ROADMAP, FEATURES, USER_STORIES, ARCHITECTURE, SCHEMA -> bump last-reconciled -> validate_doc_freshness.py writes .docs_reconciled
+7. DEPLOY    git push -> CI/CD -> Verify (gated on .docs_reconciled)
+```
+
+**Non-negotiables for steps 2 and 4:**
+- **Fresh agents, no context bleed.** Each review iteration spawns sub-agents with a clean context — never reuse a reviewer from a prior iteration and never hand the post-impl reviewer the sprint plan (Rule 5 / GL-SELF-CRITIQUE.md).
+- **Iterate until clean.** "Clean" means the iteration itself surfaces zero CRITICAL and zero HIGH findings. If the first pass is clean, run one more iteration to confirm. If iteration 5 still has CRITICAL/HIGH at Stage 4, hard-stop — do not proceed to Stage 5 (Rules 8 and 9).
